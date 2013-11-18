@@ -1,0 +1,13 @@
+<h1>Welcome to Tuff Cookies! </h1>
+
+<p>Enter Your Name to Begin Playing: </p>
+<%= form_tag "game_on" do %>
+	<%= text_field_tag "player_name" %>
+	<%= button_tag "Let's Play!", name: "lets_play" %>
+<%end%>
+
+<br><br>
+
+<%= link_to "Rules", rules_path %>
+
+<%= link_to "About", about_path %>
