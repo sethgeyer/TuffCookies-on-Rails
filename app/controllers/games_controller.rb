@@ -9,6 +9,7 @@ class GamesController < ApplicationController
 	# end
 
 	def game_on
+		
 		redirect_to game_board_path
 	end
 
@@ -17,3 +18,4 @@ class GamesController < ApplicationController
 	end
 
 end
+

@@ -9,7 +9,7 @@ describe "Welcome Page" do
 		within("h1") { should have_content("Welcome to Tuff Cookies!") }
 	end
 	
-	it "starts a game when the user inputs their name" do
+	it "kicks off the game when the user inputs their name" do
 		fill_in "player_name", with: "Seth"
 		click_on "Let's Play!"
 		current_path.should == game_board_path
