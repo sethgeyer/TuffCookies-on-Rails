@@ -3,8 +3,8 @@ TcOnRails::Application.routes.draw do
   get "/"         => "games#welcome",      as: :root
   get "/rules"    => "games#rules",        as: :rules
   get "/about"    => "games#about",        as: :about
-  post "/game_on" => "games#game_on",      as: :game_on
-  get "/game_board"  => "games#game_board", as: :game_board
+  post "/lets_play" => "games#lets_play",      as: :lets_play
+  get "/game_on"  => "games#game_on", as: :game_on
 
 
 

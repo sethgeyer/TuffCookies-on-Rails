@@ -1,3 +1,17 @@
+def input_name_and_click_lets_play
+  fill_in "player_name", with: @player.name
+  click_on "Let's Play"
+end
+
+
+
+
+
+
+
+
+
+
 # This file is copied to spec/ when you run 'rails generate rspec:install'
 ENV["RAILS_ENV"] ||= 'test'
 require File.expand_path("../../config/environment", __FILE__)
@@ -37,3 +51,5 @@ RSpec.configure do |config|
   #     --seed 1234
   config.order = "random"
 end
+
+  
