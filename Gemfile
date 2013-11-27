@@ -43,9 +43,10 @@ group :development, :test do
   gem 'pry-debugger'     # to use the next command    
   gem 'meta_request'     # to use the RailsPanel extension
   gem 'dynamic_form'     # to use error_messages_for
-  gem 'rspec-rails', '~> 2.0'
+  gem 'rspec-rails'#, '~> 2.0'
   gem 'factory_girl_rails'
   gem 'better_errors'
   gem 'capybara'
   gem 'shoulda-matchers'
+  #gem 'mocha'
 end

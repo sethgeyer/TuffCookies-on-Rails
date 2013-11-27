@@ -2,10 +2,11 @@
 
 FactoryGirl.define do
   factory :card do
-    card_name "MyString"
-    card_type ""
-    status ""
-    owner ""
+    card_name "7"
+    card_type "numbered"
+    status "not_in_play"
+    owner "dealer"
     association :game
   end
+
 end

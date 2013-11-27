@@ -173,7 +173,7 @@ DEPENDENCIES
   pry-debugger
   pry-rails
   rails (= 3.2.13)
-  rspec-rails (~> 2.0)
+  rspec-rails
   sass-rails (~> 3.2.3)
   shoulda-matchers
   uglifier (>= 1.0.3)
