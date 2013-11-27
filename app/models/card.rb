@@ -44,7 +44,7 @@ class Card < ActiveRecord::Base
 
 	def self.show_cards_in_the_pot(game_id)
 		pot = Card.where(game_id: game_id).where(owner: "pot")
-		array ||= []
+		array = []
 		pot.each { |card| array << card.card_name } 
 		return array
 	end
