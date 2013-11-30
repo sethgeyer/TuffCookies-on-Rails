@@ -29,7 +29,7 @@ class GamesController < ApplicationController
 			flipped_card = Card.dealer_flips_card(game_id)
 			card_in_play = Card.where(game_id: game_id).where(status: "card_in_play").first.card_name
 			evaluation = Card.evaluate_guess(game_id, guess, card_in_play, flipped_card)
-			new_card_in_play = Card.determine_the_card_in_play_for_next_hand(game_id, card_in_play, evaluation, flipped_card)
+			Card.determine_the_card_in_play_for_next_hand(game_id, card_in_play, evaluation, flipped_card)
 			redirect_to "/game_on/#{game_id}"
 		end
 	end

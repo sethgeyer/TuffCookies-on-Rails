@@ -161,14 +161,15 @@ describe Card do
 		
 		let(:determine_next_card) { Card.determine_the_card_in_play_for_next_hand(new_game.id, card_in_play, evaluation, flipped_card)}
 		let(:card_in_play) { "7"}
-		let(:flipped_card) { 8 }		
+		let(:flipped_card) { "8" }		
 		subject { determine_next_card  }
 
 		context "the players guess was correct" do
 			let(:evaluation) { "correct"}		
 			
 			it "'card in play' equals the card that was just flipped" do
-				should == 8
+				expect(Card).to receive(:change_old_card_in_play_status).with(new_game.id, card_in_play).and_return(true)
+				should == "8"
 			end
 		end
 		
@@ -176,21 +177,46 @@ describe Card do
 			let(:evaluation) { "wrong"}		
 			
 			it "'card in play' equals a newly flipped card" do
-				expect(Card).to receive(:dealer_flips_card).with(new_game.id).and_return(11)
-				should == 11
+				expect(Card).to receive(:dealer_flips_card).with(new_game.id).and_return("11")
+				expect(Card).to receive(:change_old_card_in_play_status).with(new_game.id, card_in_play).and_return(true)
+				should == "11"
 			end
 		end
 
-		#### 1.  Need to figure out how to handle the re-assignment of the status
-		# of the old card in play, so that there is only ever 1 "card_in_play"
-
+		
 	end
 
 
+	# CHANGE THE OLD CARD_IN_PLAY STATUS - resets the original card_in_play's status
+	# so that the flipped card can become the new "card in play"
+
+	it { Card.should respond_to(:change_old_card_in_play_status) }
+	
+	describe "#change_old_card_in_play_status" do	
+		before(:each) do
+			@old_card = Card.where(game_id: new_game.id).first
+			@old_card.status = "card_in_play"
+			@old_card.save!
+
+		end 
+
+		it "changes the old_card_in_plays status to 'played'" do
+			Card.change_old_card_in_play_status(@old_card.game_id, @old_card.card_name)
+			Card.find(@old_card.id).status.should == "played"
+		end
+	end
 
 
+	# AWARD CARDS IN THE POT - awards the cards to the applicable player
 
+	it { Card.should respond_to(:award_cards_in_pot) }
 
+	describe "#award cards in the pot" do
+		it "awards cards in the pot to the applicable player" do
+			Card.award_cards_in_pot.should == 5
+			# stopped_here:  for now, just assign the cards to the current player.
 
+		end
+	end
 
 end
