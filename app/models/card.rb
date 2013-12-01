@@ -62,6 +62,8 @@ class Card < ActiveRecord::Base
 			else
 				"wrong"
 			end
+		else
+			"EVALUATE GUESS ERROR-NEED TO FIX BUG"
 		end
 	end
 

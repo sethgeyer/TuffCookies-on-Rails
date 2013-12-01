@@ -7,7 +7,8 @@ class GamesController < ApplicationController
 		Player.create_players(params[:player_name], game)
 		Card.create_deck(game.id)
 		Card.dealer_flips_card(game.id)		
-		redirect_to "/game_on/#{game.id}"
+		evaluation = "none"
+		redirect_to "/game_on/#{game.id}/#{evaluation}"
 
 	end
 
@@ -17,6 +18,7 @@ class GamesController < ApplicationController
 		@card_in_play = Card.where(game_id: params[:game_id]).where(status: "card_in_play").first.card_name
 		@cards_remaining_in_deck = Card.count_cards_in_deck(params[:game_id])
 		@cards_in_the_pot = Card.show_cards_in_the_pot(params[:game_id])
+		@evaluation = params[:evaluation]
 		render(:game_on)
 	end
 
@@ -26,11 +28,11 @@ class GamesController < ApplicationController
 			redirect_to "/route_2_page" 
 		else
 			guess = params[:higher] || params[:lower]
-			flipped_card = Card.dealer_flips_card(game_id)
 			card_in_play = Card.where(game_id: game_id).where(status: "card_in_play").first.card_name
+			flipped_card = Card.dealer_flips_card(game_id)
 			evaluation = Card.evaluate_guess(game_id, guess, card_in_play, flipped_card)
 			Card.determine_the_card_in_play_for_next_hand(game_id, card_in_play, evaluation, flipped_card)
-			redirect_to "/game_on/#{game_id}"
+			redirect_to "/game_on/#{game_id}/#{evaluation}"
 		end
 	end
 
