@@ -23,7 +23,7 @@
 <br><br><br>
 <h3><b>Player Order and Score </b></h3>  
 <% for each in @players_in_order %>
-<%=each.name%> - <%=each.score%>
+<%=each.name%> - <%=Card.where(game_id: each.game_id).where(owner: each.name).count%>
 <br>
 <%end%>
 </p>	

@@ -24,6 +24,7 @@ class GamesController < ApplicationController
 
 	def player_guess #(Post from game_on page)
 		game_id = params[:game_id]
+		current_player_number = Player.where(game_id: game_id).where(player_order: params[:player_order]).first.player_order
 		if params[:sweep]
 			redirect_to "/route_2_page" 
 		else
@@ -31,7 +32,7 @@ class GamesController < ApplicationController
 			card_in_play = Card.where(game_id: game_id).where(status: "card_in_play").first.card_name
 			flipped_card = Card.dealer_flips_card(game_id)
 			guess_evaluation = Card.evaluate_guess(game_id, guess, card_in_play, flipped_card)
-			Card.remove_cards_from_pot(game_id, guess_evaluation)
+			Card.award_cards_in_the_pot(game_id, current_player_number, guess_evaluation)
 			Card.determine_the_card_in_play_for_next_hand(game_id, card_in_play, guess_evaluation, flipped_card)
 			redirect_to "/game_on/#{game_id}/#{guess_evaluation}"
 		end

@@ -13,15 +13,15 @@ class Player < ActiveRecord::Base
   		virtual_player.game_id = game.id
   		virtual_player.save!
   	end
-
-
-
-
-
-
-
   end
 
+  def self.select_awardee(game_id, current_player_number, guess_evaluation)
+    if guess_evaluation == "wrong"
+      Player.where(game_id: game_id).where(player_order: 2).first.name
+    else
+      "ERROR ON SELECT AWARDEE"
+    end
+  end
 
 
 

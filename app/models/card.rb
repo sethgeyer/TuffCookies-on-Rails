@@ -96,15 +96,18 @@ class Card < ActiveRecord::Base
 			old_card_in_play.save!		
 	end
 
-	def self.remove_cards_from_pot(game_id, guess_evaluation)
+	def self.award_cards_in_the_pot(game_id, current_player_number, guess_evaluation)
+	 	awardee = Player.select_awardee(game_id, current_player_number, guess_evaluation)
 	 	if guess_evaluation == "wrong"
 	 		pot_cards = Card.where(game_id: game_id).where(owner: "pot")
 	 		pot_cards.each do |card|
-	 		card.owner = "Larry"
+	 		card.owner = awardee
 	 		card.save!
 	 	end
 	 	end
 	end
+
+
 
 
 

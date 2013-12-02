@@ -290,22 +290,36 @@ describe Card do
 	end
 
 
-	# ZERO OUT THE POT - removes cards from the pot
+	# AWARD THE POT - removes cards from the pot and awards them to the applicable player
 
-	it { Card.should respond_to(:remove_cards_from_pot) }
+	it { Card.should respond_to(:award_cards_in_the_pot) }
 
-	describe "#remove_cards_from_pot" do
-		it "removes cards from the pot" do
-			guess_evaluation = "wrong"
-			game_id = new_game.id
-			pot_card = Card.where(game_id: game_id).first
+	describe "#award_cards_in_the_pot" do
+		
+		let(:guess_evaluation) { "wrong" }
+		let(:current_player_number) { Player.where(game_id: @game_id).first.player_order }
+		
+		before(:each) do
+			@game_id = new_game.id
+			FactoryGirl.create(:player, name: "Larry", game_id: @game_id)
+			FactoryGirl.create(:player, name: "Noah", game_id: @game_id, player_order: 2)
+			pot_card = Card.where(game_id: @game_id).first
 			pot_card.owner = "pot"
 			pot_card.save!
-			Card.remove_cards_from_pot(game_id, guess_evaluation)
-			Card.where(game_id: game_id).where(owner: "pot").count.should == 0
-	# 		# stopped_here:  for now, just assign the cards to the current player.
 
+		end
+
+		it "calls the 'Player.select_awardee'method" do
+			expect(Player).to receive(:select_awardee).with(@game_id, current_player_number, guess_evaluation).and_return("Noah")			
+			Card.award_cards_in_the_pot(@game_id, current_player_number, guess_evaluation)
+		end
+
+		it "awards cards in the pot" do
+			Card.award_cards_in_the_pot(@game_id, current_player_number, guess_evaluation)
+			Card.where(game_id: @game_id).where(owner: "pot").count.should == 0
 	 	end
 	end
+
+
 
 end

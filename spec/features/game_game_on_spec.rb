@@ -29,6 +29,7 @@ describe "Game_On Page" do
 	describe "#View after the player guess" do
 		before(:each) do
 			@player = FactoryGirl.create(:player, name: "Stu SecondVue")
+			@player2 = FactoryGirl.create(:player, name: "Noah", player_order: 2, game_id: @player.game_id)
 			@card = FactoryGirl.create(:card, game_id: @player.game_id, status: "card_in_play", owner: "pot")
 		end		
 
@@ -40,6 +41,7 @@ describe "Game_On Page" do
 				@another_card_in_deck = FactoryGirl.create(:card, game_id: @player.game_id, card_name: "9", owner: "dealer")
 				visit "/game_on/#{@player.game_id}/4"				
 			end
+
 			context " player guesses higher" do
 				before(:each) { click_on "Higher" }
 				it "adds either an 8 or 9 to the pot" do
@@ -50,6 +52,7 @@ describe "Game_On Page" do
 					should satisfy { has_content?("Card in Play: 8") or has_content?("Card in Play: 9") }
 				end
 			end
+
 			context " player guesses lower" do
 				before(:each) { click_on "Lower" }
 				it "adds either an 8 or 9 to the pot" do
@@ -59,9 +62,13 @@ describe "Game_On Page" do
 				it "shows either an 8 or 9 as the card_in_play" do
 					should satisfy { has_content?("Card in Play: 8") or has_content?("Card in Play: 9") }
 				end
+				it { should have_content("Noah - 2") }
 			end
-
 		end
+
+
+
+
 
 	end
 
