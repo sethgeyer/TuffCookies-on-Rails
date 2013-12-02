@@ -50,20 +50,32 @@ class Card < ActiveRecord::Base
 	end
 
 	def self.evaluate_guess(game_id, guess, card_in_play, flipped_card)
-		if guess == "higher" 
-			if flipped_card.to_i > card_in_play.to_i 
-				"correct"
-			else
-				"wrong"
-			end
-		elsif guess == "lower"
-			if flipped_card.to_i < card_in_play.to_i 
-				"correct"
-			else
-				"wrong"
-			end
+		flipped_card_evaluation = Card.evaluate_flipped_card(card_in_play, flipped_card)
+		if flipped_card_evaluation == "higher" && guess == "higher" 
+			"correct"
+		elsif flipped_card_evaluation == "lower" && guess == "lower"
+			"correct"
+		elsif flipped_card_evaluation == "same" 
+			"same"
+		elsif flipped_card_evaluation == "action card"
+			"action card"				
 		else
-			"EVALUATE GUESS ERROR-NEED TO FIX BUG"
+			"wrong"
+		end
+	end
+
+	def self.evaluate_flipped_card(card_in_play, flipped_card)
+		difference = flipped_card.to_i - card_in_play.to_i
+		if difference == -(card_in_play.to_i)
+			"action card"
+		elsif difference > 0
+			"higher"
+		elsif difference < 0
+			"lower"
+		elsif difference == 0
+			"same"
+		else
+			"EVALUATE FLIPPED CARD ERROR"
 		end
 	end
 
@@ -84,8 +96,14 @@ class Card < ActiveRecord::Base
 			old_card_in_play.save!		
 	end
 
-	def self.award_cards_in_pot
-		5
+	def self.remove_cards_from_pot(game_id, guess_evaluation)
+	 	if guess_evaluation == "wrong"
+	 		pot_cards = Card.where(game_id: game_id).where(owner: "pot")
+	 		pot_cards.each do |card|
+	 		card.owner = "Larry"
+	 		card.save!
+	 	end
+	 	end
 	end
 
 

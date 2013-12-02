@@ -2,7 +2,8 @@
 
 <%= form_tag player_guess_path(@player.game_id) do %>
 
-<p>Player Name: <%= @player.name%></p>
+<p>Player Name: <%= @player.name%> </p>
+<p>Player Order: <%=text_field_tag "player_order", @player.player_order %></p> 
 <p>Player Score: <%= @player.score%></p>
 <p>Game ID: <%= @player.game_id%></p>
 

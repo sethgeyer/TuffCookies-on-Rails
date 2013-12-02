@@ -115,14 +115,22 @@ describe Card do
 
 		describe "#evaluate_guess" do
 		
-			let(:evaluation) { Card.evaluate_guess(new_game.id, guess, card_in_play, flipped_card) }
+			let(:guess_evaluation) { Card.evaluate_guess(new_game.id, guess, card_in_play, flipped_card) }
+			let(:card_in_play) { "7"}
+			let(:flipped_card) { "8" }
+			let(:guess) { "higher"}
+			
+			subject { guess_evaluation }
 
-			subject { evaluation }
+			it "should call the evaluate_flipped_card method" do		
+				expect(Card).to receive(:evaluate_flipped_card).with(card_in_play, flipped_card).and_return("higher")
+				guess_evaluation			
+			end
 
-			context "the flipped card is higher" do			
-				let(:card_in_play) { "7"}
-				let(:flipped_card) { "8" }			
-				
+			context "#the flipped card is higher" do							
+				before(:each) do
+				 allow(Card).to receive(:evaluate_flipped_card).with(card_in_play, flipped_card).and_return("higher")			
+				end
 				context "the guess is 'higher'" do
 					let(:guess) { "higher"}					
 					it { should == "correct" }
@@ -134,9 +142,10 @@ describe Card do
 				end		
 			end
 
-			context "the flipped card is lower" do			
-				let(:card_in_play) { "7"}
-				let(:flipped_card) { "6" }	
+			context "#the flipped card is lower" do			
+				before(:each) do
+				 allow(Card).to receive(:evaluate_flipped_card).with(card_in_play, flipped_card).and_return("lower")			
+				end
 				
 				context "the guess is 'lower'" do
 					let(:guess) { "lower" }
@@ -148,10 +157,84 @@ describe Card do
 					it { should == "wrong" }
 				end		
 			end
-		
+
+			context "#the flipped card is the same" do			
+				before(:each) do
+				 allow(Card).to receive(:evaluate_flipped_card).with(card_in_play, flipped_card).and_return("same")			
+				end
+				
+				context "the guess is 'lower'" do
+					let(:guess) { "lower" }
+					it { should == "same" }
+				end
+				
+				context "the guess is 'higher'" do
+					let(:guess) { "higher"}
+					it { should == "same" }
+				end		
+			end
+
+			context "#the flipped card is an action card" do			
+				before(:each) do
+				 allow(Card).to receive(:evaluate_flipped_card).with(card_in_play, flipped_card).and_return("action card")			
+				end
+				
+				context "the guess is 'lower'" do
+					let(:guess) { "lower" }
+					it { should == "action card" }
+				end
+				
+				context "the guess is 'higher'" do
+					let(:guess) { "higher"}
+					it { should == "action card" }
+				end		
+			end
 		end	
 
 	#### > end of EVALUATE GUESS
+
+
+	# EVALUATE FLIPPED_CARD - determines whether the next card is higher or lower
+	# than the card_in_play
+
+	it { Card.should respond_to(:evaluate_flipped_card)}
+
+	describe "#evaluate_flipped_card" do
+		subject(:evaluate_flipped_card) { Card.evaluate_flipped_card(card_in_play, flipped_card) }
+
+		context "flipped_card is larger than card_in_play" do
+			let(:card_in_play) { "7"}
+			let(:flipped_card) { "8"}	
+			it { should == "higher" }
+		end
+		
+		context "flipped_card is smaller than card_in_play" do
+			let(:card_in_play) { "7"}
+			let(:flipped_card) { "6"}	
+			it { should == "lower" }
+		end
+
+		context "flipped_card is same as card_in_play" do
+			let(:card_in_play) { "7"}
+			let(:flipped_card) { "7"}	
+			it { should == "same" }
+		end
+		
+		context "flipped_card is same as card_in_play" do
+			let(:card_in_play) { "7"}
+			let(:flipped_card) { "7"}	
+			it { should == "same" }
+		end
+
+		context "flipped_card is same as card_in_play" do
+			let(:card_in_play) { "7"}
+			let(:flipped_card) { "STRING"}	
+			it { should == "action card" }
+		end
+
+
+	end
+
 
 	# DETERMINE THE CARD IN PLAY FOR THE NEXT HAND - determines which card
 	#will be the card in play for the next hand based on TuffCookies unique rules
@@ -207,16 +290,22 @@ describe Card do
 	end
 
 
-	# AWARD CARDS IN THE POT - awards the cards to the applicable player
+	# ZERO OUT THE POT - removes cards from the pot
 
-	it { Card.should respond_to(:award_cards_in_pot) }
+	it { Card.should respond_to(:remove_cards_from_pot) }
 
-	describe "#award cards in the pot" do
-		it "awards cards in the pot to the applicable player" do
-			Card.award_cards_in_pot.should == 5
-			# stopped_here:  for now, just assign the cards to the current player.
+	describe "#remove_cards_from_pot" do
+		it "removes cards from the pot" do
+			guess_evaluation = "wrong"
+			game_id = new_game.id
+			pot_card = Card.where(game_id: game_id).first
+			pot_card.owner = "pot"
+			pot_card.save!
+			Card.remove_cards_from_pot(game_id, guess_evaluation)
+			Card.where(game_id: game_id).where(owner: "pot").count.should == 0
+	# 		# stopped_here:  for now, just assign the cards to the current player.
 
-		end
+	 	end
 	end
 
 end

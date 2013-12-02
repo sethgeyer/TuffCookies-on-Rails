@@ -13,6 +13,7 @@ describe "Game_On Page" do
 		subject { page }
 		
 		it { should have_content(@player.name) }
+		it { should have_field("player_order") }   # this is a placeholder test, to_be refactored
 		it { should have_content(@player.score) }
 	#	it { should have_content(@player.game_id) }
 		it { should have_content("Cards in Deck: 51") }
@@ -29,8 +30,6 @@ describe "Game_On Page" do
 		before(:each) do
 			@player = FactoryGirl.create(:player, name: "Stu SecondVue")
 			@card = FactoryGirl.create(:card, game_id: @player.game_id, status: "card_in_play", owner: "pot")
-			#@other_card_in_deck = FactoryGirl.create(:card, game_id: @player.game_id, card_name: "8", owner: "dealer")
-			
 		end		
 
 		subject { page }
