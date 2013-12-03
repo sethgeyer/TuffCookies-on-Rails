@@ -3,8 +3,8 @@
 <%= form_tag player_guess_path(@player.game_id) do %>
 
 <p>Player Name: <%= @player.name%> </p>
-<p>Player Order: <%=text_field_tag "player_order", @player.player_order %></p> 
-<p>Player Score: <%= @player.score%></p>
+<p>Player Order: <%=text_field_tag "number", @player.number %></p> 
+<p>Player Score: <%= Card.where(owner: @player.name).count%></p>
 <p>Game ID: <%= @player.game_id%></p>
 
 <p>Cards in Deck: <%= @cards_remaining_in_deck %></p>

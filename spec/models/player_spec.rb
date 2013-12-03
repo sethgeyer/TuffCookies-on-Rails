@@ -29,7 +29,7 @@ describe Player do
  		end
 
 		it "assigns player order" do
- 			Player.where(game_id: game.id).where(name: "Stu").first.player_order.should == 1
+ 			Player.where(game_id: game.id).where(name: "Stu").first.number.should == 1
  		end
  	end
 
@@ -41,9 +41,9 @@ describe Player do
       
 
     it "should return 'Noah'" do
-      current_player_number = FactoryGirl.create(:player, game_id: 7, name: "Larry").player_order
+      current_player_number = FactoryGirl.create(:player, game_id: 7, name: "Larry").number
       guess_evaluation = "wrong"
-      awardee = FactoryGirl.create(:player, name: "Noah", game_id: 7, player_order: 2)
+      awardee = FactoryGirl.create(:player, name: "Noah", game_id: 7, number: 2)
 
 
       Player.select_awardee(7, current_player_number, guess_evaluation).should == awardee.name

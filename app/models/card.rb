@@ -1,5 +1,5 @@
 class Card < ActiveRecord::Base
-  attr_accessible :card_name, :card_type, :game_id, :owner, :status
+  attr_accessible :name, :card_type, :game_id, :owner, :status
  	
  	belongs_to :game
 
@@ -7,7 +7,7 @@ class Card < ActiveRecord::Base
  		for i in 1..13
  			for each in 1..4
  				card = Card.new
- 				card.card_name = i
+ 				card.name = i
  				card.card_type = "numbered"
  				card.status = "not_in_play"
  				card.owner = "dealer"
@@ -35,7 +35,7 @@ class Card < ActiveRecord::Base
 		flipped_card.status = "card_in_play"
 		flipped_card.owner = "pot"
 		flipped_card.save!
-		return flipped_card.card_name
+		return flipped_card.name
 	end
 
 	def self.count_cards_in_deck(game_id)
@@ -45,7 +45,7 @@ class Card < ActiveRecord::Base
 	def self.show_cards_in_the_pot(game_id)
 		pot = Card.where(game_id: game_id).where(owner: "pot")
 		array = []
-		pot.each { |card| array << card.card_name } 
+		pot.each { |card| array << card.name } 
 		return array
 	end
 
@@ -91,21 +91,21 @@ class Card < ActiveRecord::Base
 	end
 
 	def self.change_old_card_in_play_status(game_id, card_in_play)
-			old_card_in_play = Card.where(game_id: game_id).where(status: "card_in_play").where(card_name: card_in_play).first
+			old_card_in_play = Card.where(game_id: game_id).where(status: "card_in_play").where(name: card_in_play).first
 			old_card_in_play.status = "played"
 			old_card_in_play.save!		
 	end
 
-	def self.award_cards_in_the_pot(game_id, current_player_number, guess_evaluation)
-	 	awardee = Player.select_awardee(game_id, current_player_number, guess_evaluation)
-	 	if guess_evaluation == "wrong"
-	 		pot_cards = Card.where(game_id: game_id).where(owner: "pot")
-	 		pot_cards.each do |card|
-	 		card.owner = awardee
-	 		card.save!
-	 	end
-	 	end
-	end
+	# def self.award_cards_in_the_pot(game_id, current_player_number, guess_evaluation)
+	#  	awardee = Player.select_awardee(game_id, current_player_number, guess_evaluation)
+	#  	if guess_evaluation == "wrong"
+	#  		pot_cards = Card.where(game_id: game_id).where(owner: "pot")
+	#  		pot_cards.each do |card|
+	#  		card.owner = awardee
+	#  		card.save!
+	#  	end
+	#  	end
+	# end
 
 
 

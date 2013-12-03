@@ -7,7 +7,7 @@ class Game < ActiveRecord::Base
   # 	for i in 1..13
   # 		for a in 1..4
 	 #  		card = Card.new
-	 #  		card.card_name = "#{i}"
+	 #  		card.name = "#{i}"
 	 #  		card.card_type = "numbered"
 	 #  		card.game_id = 1
 	 #  		card.owner = "dealer"

@@ -28,7 +28,7 @@ describe "Welcome Page" do
 	# it "it links to 'game_on' page when player inputs name" do
 	# 	fill_in "player_name", with: "Stew"
 	# 	click_on "Let's Play"
-	# 	current_path.should == game_on_path
+	# 	current_path.should == game_on_path(game_id, evaluation
 	# end
 #???? WHAT IS THE BEST WAY TO TEST A PATH WITH A PASSED NAMED PARAMETER IN THE PATHNAME?
 

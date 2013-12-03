@@ -2,7 +2,7 @@
 
 FactoryGirl.define do
   factory :card do
-    card_name "7"
+    name "7"
     card_type "numbered"
     status "not_in_play"
     owner "dealer"
