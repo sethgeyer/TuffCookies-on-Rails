@@ -1,36 +1,34 @@
 require 'spec_helper'
 
-describe Player do
-  
-  # associations
+describe Player do 
   it { should belong_to(:game) }
 
-  # factories
   it "has a valid factory" do 
   	FactoryGirl.create(:player).should be_valid
   end
 
- 	
-
   #CREATE PLAYERS - creates a list of players (1 actual, 3 virtual) 
-  #for the game and assigns an order of play
+  #for the game and assigns a number representing their "order of play" at
+  #the start of the game.
  	it { Player.should respond_to(:create_players) }
 
  	describe "#create_players" do 
  		let(:game) { FactoryGirl.create(:game) }
+
  		before(:each) { Player.create_players("Stu", game) }
- 		
+
  		it "creates a new player named 'Stu'" do	
- 			Player.first.name.should == "Stu"
+ 		 Player.first.name.should == "Stu"
  		end
  	
 		it "creates 3 additional virtual players" do
- 			Player.where(game_id: game.id).count.should == 4
+ 		 Player.where(game_id: game.id).count.should == 4
  		end
 
-		it "assigns player order" do
- 			Player.where(game_id: game.id).where(name: "Stu").first.number.should == 1
- 		end
+		it "assigns player order of '1' to Stu and '3' to the third player" do
+ 		 Player.where(game_id: game.id).where(name: "Stu").first.number.should == 1
+ 		 Player.where(game_id: game.id).where(name: "Anne").first.number.should == 4
+    end
  	end
 
   # SELECT AWARDEE - identifies which player should receive the awarded cards in the pot

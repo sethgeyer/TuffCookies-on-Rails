@@ -1,9 +1,17 @@
 class Card < ActiveRecord::Base
-  attr_accessible :name, :card_type, :game_id, :owner, :status
+  attr_accessible :name, :card_type, :game_id, :owner, :status, :card_order
  	
  	belongs_to :game
 
+ 	@DECK_SIZE = 52
+
  	def self.create_deck(game_id)
+ 		array = []
+ 		for i in 1..@DECK_SIZE
+ 			array << i
+ 		end
+ 		array.shuffle!
+
  		for i in 1..13
  			for each in 1..4
  				card = Card.new
@@ -11,6 +19,7 @@ class Card < ActiveRecord::Base
  				card.card_type = "numbered"
  				card.status = "not_in_play"
  				card.owner = "dealer"
+ 				card.card_order = array.shift
  				card.game_id = game_id
  				card.save!
  			end
@@ -18,32 +27,25 @@ class Card < ActiveRecord::Base
  	end
 
  	def self.select_cards(game_id)
-		total_cards = Card.where(game_id: game_id).where(status: "not_in_play")
-		
-		if total_cards.count == 52
-			total_cards.where(card_type: "numbered")
+		shuffled_deck = Card.where(game_id: game_id).where(status: "not_in_play").order(:card_order)
+		if shuffled_deck.count == @DECK_SIZE
+			shuffled_deck.where(card_type: "numbered")
  		else
- 			total_cards
+ 			shuffled_deck
  		end
-
-
  	end
 
 	def self.dealer_flips_card(game_id)
-		total_cards = Card.select_cards(game_id)
-		flipped_card = total_cards.sample
+		shuffled_deck = Card.select_cards(game_id)
+		flipped_card = shuffled_deck.first
 		flipped_card.status = "card_in_play"
 		flipped_card.owner = "pot"
 		flipped_card.save!
 		return flipped_card.name
 	end
 
-	def self.count_cards_in_deck(game_id)
-		Card.where(game_id: game_id).where(status: "not_in_play").count
-	end
-
 	def self.show_cards_in_the_pot(game_id)
-		pot = Card.where(game_id: game_id).where(owner: "pot")
+		pot = Card.where(game_id: game_id).where(owner: "pot").order("card_order desc")
 		array = []
 		pot.each { |card| array << card.name } 
 		return array
@@ -51,9 +53,7 @@ class Card < ActiveRecord::Base
 
 	def self.evaluate_guess(game_id, guess, card_in_play, flipped_card)
 		flipped_card_evaluation = Card.evaluate_flipped_card(card_in_play, flipped_card)
-		if flipped_card_evaluation == "higher" && guess == "higher" 
-			"correct"
-		elsif flipped_card_evaluation == "lower" && guess == "lower"
+		if flipped_card_evaluation == guess 
 			"correct"
 		elsif flipped_card_evaluation == "same" 
 			"same"
@@ -66,7 +66,7 @@ class Card < ActiveRecord::Base
 
 	def self.evaluate_flipped_card(card_in_play, flipped_card)
 		difference = flipped_card.to_i - card_in_play.to_i
-		if difference == -(card_in_play.to_i)
+		if flipped_card.to_i == 0  # is an action_card
 			"action card"
 		elsif difference > 0
 			"higher"
@@ -79,11 +79,11 @@ class Card < ActiveRecord::Base
 		end
 	end
 
-	def self.determine_the_card_in_play_for_next_hand(game_id, card_in_play, evaluation, flipped_card)
+	def self.determine_the_card_in_play_for_next_hand(game_id,  guess_evaluation, card_in_play, flipped_card)
 		Card.change_old_card_in_play_status(game_id, card_in_play)
-		if evaluation == "correct"
+		if guess_evaluation == "correct"
 			return flipped_card
-		elsif evaluation == "wrong"
+		elsif guess_evaluation == "wrong"
 			Card.dealer_flips_card(game_id)
 		else
 		end

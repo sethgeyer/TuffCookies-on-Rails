@@ -6,6 +6,7 @@ FactoryGirl.define do
     card_type "numbered"
     status "not_in_play"
     owner "dealer"
+    card_order 1
     association :game
   end
 

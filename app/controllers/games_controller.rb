@@ -13,12 +13,21 @@ class GamesController < ApplicationController
 	end
 
 	def game_on
-		@player = Player.where(game_id: params[:game_id]).first	
-		@players_in_order = Player.where(game_id: params[:game_id]).order(:number)
-		@card_in_play = Card.where(game_id: params[:game_id]).where(status: "card_in_play").first.name
-		@cards_remaining_in_deck = Card.count_cards_in_deck(params[:game_id])
-		@cards_in_the_pot = Card.show_cards_in_the_pot(params[:game_id])
+		game_id = params[:game_id]
+		game_cards = Card.where(game_id: game_id)
+		@players_in_order = Player.where(game_id: game_id).order(:number)
+		@player = @players_in_order.first
+		@card_in_play = game_cards.where(status: "card_in_play").first.name
+		@cards_remaining_in_deck = game_cards.where(status: "not_in_play").count
+		@cards_in_the_pot = Card.show_cards_in_the_pot(game_id)
 		@evaluation = params[:evaluation]
+
+		#####showing cards in deck for feature testing purposes only
+		deck_array = []
+		game_cards.where(status: "not_in_play").order(:card_order).limit(10).each { |card| deck_array << card.name } 
+		@deck_array = deck_array
+		#####
+
 		render(:game_on)
 	end
 
@@ -33,7 +42,7 @@ class GamesController < ApplicationController
 			flipped_card = Card.dealer_flips_card(game_id)
 			guess_evaluation = Card.evaluate_guess(game_id, guess, card_in_play, flipped_card)
 			#Card.award_cards_in_the_pot(game_id, current_player_number, guess_evaluation)
-			Card.determine_the_card_in_play_for_next_hand(game_id, card_in_play, guess_evaluation, flipped_card)
+			Card.determine_the_card_in_play_for_next_hand(game_id, guess_evaluation, card_in_play, flipped_card)
 			redirect_to "/game_on/#{game_id}/#{guess_evaluation}"
 		end
 	end
