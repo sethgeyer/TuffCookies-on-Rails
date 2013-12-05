@@ -82,18 +82,18 @@ class Card < ActiveRecord::Base
 	def self.determine_the_card_in_play_for_next_hand(game_id,  guess_evaluation, card_in_play, flipped_card)
 		Card.change_old_card_in_play_status(game_id, card_in_play)
 		if guess_evaluation == "correct"
-			return flipped_card
-		elsif guess_evaluation == "wrong"
-			Card.dealer_flips_card(game_id)
+			flipped_card
 		else
+			#Card.change_old_card_in_play_status(game_id, flipped_card)
+			Card.dealer_flips_card(game_id)
 		end
 
 	end
 
-	def self.change_old_card_in_play_status(game_id, card_in_play)
-			old_card_in_play = Card.where(game_id: game_id).where(status: "card_in_play").where(name: card_in_play).first
+	def self.change_old_card_in_play_status(game_id, card)
+			old_card_in_play = Card.where(game_id: game_id).where(status: "card_in_play").where(name: card).first
 			old_card_in_play.status = "played"
-			old_card_in_play.save!		
+			old_card_in_play.save!
 	end
 
 	# def self.award_cards_in_the_pot(game_id, current_player_number, guess_evaluation)

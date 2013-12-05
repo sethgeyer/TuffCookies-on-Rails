@@ -36,13 +36,13 @@ describe "Game_On Page" do
 
 		subject { page }
 		
-		context " next card is higher than the current card" do
+		context "#next card is higher than the current card" do
 			before(:each) do
 				@first_card_in_deck = FactoryGirl.create(:card, game_id: @player1.game_id, name: "9", owner: "dealer", card_order: 2)
 				@second_card_in_deck = FactoryGirl.create(:card, game_id: @player1.game_id, name: "8", owner: "dealer", card_order: 3)
 			end
 
-			context " player guesses higher" do
+			context "#player guesses higher" do
 				before(:each) { click_on "Higher" }
 				it "adds the next card to the pot" do
 					should have_content("Cards in the Pot: 2 [\"9\", \"7\"]")
@@ -53,72 +53,55 @@ describe "Game_On Page" do
 				end
 			end
 
-			context " player guesses lower" do
+			context "#player guesses lower" do
 				before(:each) { click_on "Lower" }
 				it "adds the 'next' next_card card to the pot" do
 					should have_content("Cards in the Pot: 3 [\"8\", \"9\", \"7\"]")
 				end
 				it { should have_content("Last Guess Was: wrong") }
-				# it "shows shows the 'next' next_card as the card_in_play" do
-				# 	should have_content("Card in Play: 8")	
-				# end
+				it "shows the 'next' next_card as the card_in_play" do
+					should have_content("Card in Play: 8")	
+				end
 				# it { should have_content("Noah - 2") }
 			end
 		end
 
 
-		context " next card is lower than the current card" do
-			before(:each) do
-				@first_card_in_deck = FactoryGirl.create(:card, game_id: @player1.game_id, name: "6", owner: "dealer", card_order: 2)
-				@second_card_in_deck = FactoryGirl.create(:card, game_id: @player1.game_id, name: "5", owner: "dealer", card_order: 3)
-			end
+		# context " next card is lower than the current card" do
+		# 	before(:each) do
+		# 		@first_card_in_deck = FactoryGirl.create(:card, game_id: @player1.game_id, name: "6", owner: "dealer", card_order: 2)
+		# 		@second_card_in_deck = FactoryGirl.create(:card, game_id: @player1.game_id, name: "5", owner: "dealer", card_order: 3)
+		# 	end
 
-			context " player guesses lower" do
-				before(:each) { click_on "Lower" }
-				it "adds the next card to the pot" do
-					should have_content("Cards in the Pot: 2 [\"6\", \"7\"]")
-				end
-				it { should have_content("Last Guess Was: correct") }
-				it "shows the next card as the new card_in_play" do
-					should have_content("Card in Play: 6")
-				end
-			end
+		# 	context " player guesses lower" do
+		# 		before(:each) { click_on "Lower" }
+		# 		it "adds the next card to the pot" do
+		# 			should have_content("Cards in the Pot: 2 [\"6\", \"7\"]")
+		# 		end
+		# 		it { should have_content("Last Guess Was: correct") }
+		# 		it "shows the next card as the new card_in_play" do
+		# 			should have_content("Card in Play: 6")
+		# 		end
+		# 	end
 
 
-			context " player guesses higher" do
-				before(:each) { click_on "Higher" }
-				# it "adds the next card to the pot" do
-				# 	should have_content("Cards in the Pot: 2 [\"9\", \"7\"]")
-				# end
-				it { should have_content("Last Guess Was: wrong") }
-				# it "shows the next card as the new card_in_play" do
-				# 	should have_content("Card in Play: 9")
-				# end
-			end
-		end
-
-		context " next card is the same as the the current card" do
-			before(:each) do
-				@first_card_in_deck = FactoryGirl.create(:card, game_id: @player1.game_id, name: "7", owner: "dealer", card_order: 2)
-				@second_card_in_deck = FactoryGirl.create(:card, game_id: @player1.game_id, name: "5", owner: "dealer", card_order: 3)
-			end
-
-			context " player guesses lower" do
-				before(:each) { click_on "Lower" }
-				it "adds the next card to the pot" do
-					should have_content("Cards in the Pot: 2 [\"7\", \"7\"]")
-				end
-				it { should have_content("Last Guess Was: same") }
-				it "shows the next card as the new card_in_play" do
-					should have_content("Card in Play: 7")
-				end
-			end
-		end
+		# 	context " player guesses higher" do
+		# 		before(:each) { click_on "Higher" }
+		# 		# it "adds the next card to the pot" do
+		# 		# 	should have_content("Cards in the Pot: 2 [\"9\", \"7\"]")
+		# 		# end
+		# 		it { should have_content("Last Guess Was: wrong") }
+		# 		# it "shows the next card as the new card_in_play" do
+		# 		# 	should have_content("Card in Play: 9")
+		# 		# end
+		# 	end
+		# end
 
 		# context " next card is the same as the the current card" do
 		# 	before(:each) do
-		# 		@first_card_in_deck = FactoryGirl.create(:card, game_id: @player1.game_id, name: "war_card", owner: "dealer", card_order: 2)
+		# 		@first_card_in_deck = FactoryGirl.create(:card, game_id: @player1.game_id, name: "7", owner: "dealer", card_order: 2)
 		# 		@second_card_in_deck = FactoryGirl.create(:card, game_id: @player1.game_id, name: "5", owner: "dealer", card_order: 3)
+
 		# 	end
 
 		# 	context " player guesses lower" do
@@ -132,9 +115,6 @@ describe "Game_On Page" do
 		# 		end
 		# 	end
 		# end
-
-
-
 
 	end
 

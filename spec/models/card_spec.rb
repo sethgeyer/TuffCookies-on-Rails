@@ -232,26 +232,71 @@ describe Card do
 		let(:determine_next_card) { Card.determine_the_card_in_play_for_next_hand(new_game.id, guess_evaluation, card_in_play,  flipped_card)}
 		let(:card_in_play) { "7"}
 		let(:flipped_card) { "8" }		
+		let(:guess_evaluation) { "correct" }
+		let(:stub_change_status) { allow(Card).to receive(:change_old_card_in_play_status).with(new_game.id, card_in_play).and_return(true) }
 		subject { determine_next_card  }
 
-		context "the players guess was correct" do
+		it "calls the 'change_old_card_in_play_status' method" do
+			expect(Card).to receive(:change_old_card_in_play_status).with(new_game.id, card_in_play).and_return(true)
+			determine_next_card
+		end
+
+		context "#the players guess_evaluation returned 'correct'" do
 			let(:guess_evaluation) { "correct"}		
 			
-			it "'card in play' equals the card that was just flipped" do
-				expect(Card).to receive(:change_old_card_in_play_status).with(new_game.id, card_in_play).and_return(true)
-				should == "8"
+			it "sets the 'card in play' equal to the card that was just flipped" do
+				stub_change_status
+				should == flipped_card
 			end
 		end
 		
-		context "the players guess was wrong" do
-			let(:guess_evaluation) { "wrong"}		
-			
-			it "'card in play' equals a newly flipped card" do
-				expect(Card).to receive(:dealer_flips_card).with(new_game.id).and_return("11")
-				expect(Card).to receive(:change_old_card_in_play_status).with(new_game.id, card_in_play).and_return(true)
-				should == "11"
+		context "#the players guess_evaluation did NOT return 'correct'" do
+			let(:flipped_card) { "7"}
+			let(:guess_evaluation) { "same"}
+			let(:next_flipped_card) {"11"}
+			before(:each) do
+				stub_change_status
+				allow(Card).to receive(:dealer_flips_card).with(new_game.id).and_return(next_flipped_card)
 			end
-		end		
+
+			it "calls the 'change_old_card_in_play_status' method again" do
+				expect(Card).to receive(:change_old_card_in_play_status).with(new_game.id, flipped_card).and_return(true)
+				determine_next_card
+			end
+
+			context "#the players guess_evaluation returned 'wrong'" do
+				let(:flipped_card) { "6"}
+				let(:guess_evaluation) { "wrong"}		
+				
+				it "sets the 'card in play' equal to a newly flipped card" do
+					should == next_flipped_card
+				end
+			
+			# I need to figure out how to run a second "change old card in play" method w a second argument
+			# in order to re-assign the first flipped card a "played" status.... current, there is an issue w/
+			#two of them showing up.
+
+			end		
+		
+			context "#the players guess_evaluation returned 'same'" do
+				let(:flipped_card) { "7"}
+				let(:guess_evaluation) { "same"}		
+
+				it "sets the 'card in play' equal to a newly flipped card" do
+					should == next_flipped_card
+				end
+			end	
+
+			context "#the players guess_evaluation returned 'action card'" do
+				let(:flipped_card) { "action card"}
+				let(:guess_evaluation) { "action card"}		
+				
+				it "sets the 'card in play' equal to a newly flipped card" do
+					should == next_flipped_card
+				end
+			end	
+
+		end
 	end
 
 
@@ -268,10 +313,13 @@ describe Card do
 
 		end 
 
-		it "changes the old_card_in_plays status to 'played'" do
+		it "changes the old_card_in_play's status to 'played'" do
 			Card.change_old_card_in_play_status(@old_card.game_id, @old_card.name)
 			Card.find(@old_card.id).status.should == "played"
+
 		end
+
+
 	end
 
 
