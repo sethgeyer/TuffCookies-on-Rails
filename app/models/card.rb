@@ -37,12 +37,23 @@ class Card < ActiveRecord::Base
 
 	def self.dealer_flips_card(game_id)
 		shuffled_deck = Card.select_cards(game_id)
+		Card.change_old_card_in_play_status(game_id)
 		flipped_card = shuffled_deck.first
 		flipped_card.status = "card_in_play"
 		flipped_card.owner = "pot"
 		flipped_card.save!
 		return flipped_card.name
 	end
+
+	def self.change_old_card_in_play_status(game_id)
+		old_card_in_play = Card.where(game_id: game_id).where(status: "card_in_play").first
+		unless old_card_in_play == nil
+			old_card_in_play.status = "played"			
+			old_card_in_play.save!
+		end
+	end
+
+
 
 	def self.show_cards_in_the_pot(game_id)
 		pot = Card.where(game_id: game_id).where(owner: "pot").order("card_order desc")
@@ -80,7 +91,7 @@ class Card < ActiveRecord::Base
 	end
 
 	def self.determine_the_card_in_play_for_next_hand(game_id,  guess_evaluation, card_in_play, flipped_card)
-		Card.change_old_card_in_play_status(game_id, card_in_play)
+		#Card.change_old_card_in_play_status(game_id, card_in_play)
 		if guess_evaluation == "correct"
 			flipped_card
 		else
@@ -90,11 +101,7 @@ class Card < ActiveRecord::Base
 
 	end
 
-	def self.change_old_card_in_play_status(game_id, card)
-			old_card_in_play = Card.where(game_id: game_id).where(status: "card_in_play").where(name: card).first
-			old_card_in_play.status = "played"
-			old_card_in_play.save!
-	end
+	
 
 	# def self.award_cards_in_the_pot(game_id, current_player_number, guess_evaluation)
 	#  	awardee = Player.select_awardee(game_id, current_player_number, guess_evaluation)

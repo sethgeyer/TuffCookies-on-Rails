@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20131205163803) do
+ActiveRecord::Schema.define(:version => 20131209184927) do
 
   create_table "cards", :force => true do |t|
     t.string   "name"
@@ -25,16 +25,19 @@ ActiveRecord::Schema.define(:version => 20131205163803) do
   end
 
   create_table "games", :force => true do |t|
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
+    t.datetime "created_at",                  :null => false
+    t.datetime "updated_at",                  :null => false
+    t.integer  "consecutive_correct_guesses"
+    t.string   "direction"
   end
 
   create_table "players", :force => true do |t|
     t.string   "name"
     t.integer  "number"
     t.integer  "game_id"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
+    t.datetime "created_at",     :null => false
+    t.datetime "updated_at",     :null => false
+    t.integer  "current_player"
   end
 
 end

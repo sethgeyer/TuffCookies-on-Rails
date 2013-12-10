@@ -56,28 +56,36 @@ describe Card do
 	it { Card.should respond_to(:dealer_flips_card) }
 
 	describe "#dealer_flips_card" do
+		
+
 		before(:each) do
 			@cards = Card.where(game_id: new_game.id).where(status: "not_in_play").order(:card_order)
+			allow(Card).to receive(:select_cards).with(new_game.id).and_return(@cards)
+			allow(Card).to receive(:change_old_card_in_play_status).with(new_game.id).and_return(true)
 		end
+
+		
 
 		it "calls 'select_cards' method " do
 			expect(Card).to receive(:select_cards).with(new_game.id).and_return(@cards)
 			Card.dealer_flips_card(new_game.id)
 		end
 		
-		it "calls 'select_cards' method and returns a value" do
-			allow(Card).to receive(:select_cards).with(new_game.id).and_return(@cards)
+		it "calls the 'change_old_card_in_play_status' method" do
+			expect(Card).to receive(:change_old_card_in_play_status).with(new_game.id).and_return(true)
+			Card.dealer_flips_card(new_game.id)
+		end
+
+		it "returns the name of the flipped card" do
 			Card.dealer_flips_card(new_game.id).should == @cards.first.name
 		end
 
-		it "assigns a status of 'card_in_play'" do
-			allow(Card).to receive(:select_cards).with(new_game.id).and_return(@cards)
+		it "assigns a status of 'card_in_play' to the flipped card" do
 			Card.dealer_flips_card(new_game.id)
 			Card.find(@cards.first.id).status.should == "card_in_play"
 		end
 
-		it "assigns an 'owner' of 'pot'" do
-			allow(Card).to receive(:select_cards).with(new_game.id).and_return(@cards)
+		it "assigns an 'owner' of 'pot' to the flipped_card" do
 			Card.dealer_flips_card(new_game.id)
 			Card.find(@cards.first.id).owner.should == "pot"
 		end
@@ -233,19 +241,19 @@ describe Card do
 		let(:card_in_play) { "7"}
 		let(:flipped_card) { "8" }		
 		let(:guess_evaluation) { "correct" }
-		let(:stub_change_status) { allow(Card).to receive(:change_old_card_in_play_status).with(new_game.id, card_in_play).and_return(true) }
+		# let(:stub_change_status) { allow(Card).to receive(:change_old_card_in_play_status).with(new_game.id, card_in_play).and_return(true) }
 		subject { determine_next_card  }
 
-		it "calls the 'change_old_card_in_play_status' method" do
-			expect(Card).to receive(:change_old_card_in_play_status).with(new_game.id, card_in_play).and_return(true)
-			determine_next_card
-		end
+		# it "calls the 'change_old_card_in_play_status' method" do
+		# 	expect(Card).to receive(:change_old_card_in_play_status).with(new_game.id, card_in_play).and_return(true)
+		# 	determine_next_card
+		# end
 
 		context "#the players guess_evaluation returned 'correct'" do
 			let(:guess_evaluation) { "correct"}		
 			
 			it "sets the 'card in play' equal to the card that was just flipped" do
-				stub_change_status
+				# stub_change_status
 				should == flipped_card
 			end
 		end
@@ -255,14 +263,14 @@ describe Card do
 			let(:guess_evaluation) { "same"}
 			let(:next_flipped_card) {"11"}
 			before(:each) do
-				stub_change_status
+				# stub_change_status
 				allow(Card).to receive(:dealer_flips_card).with(new_game.id).and_return(next_flipped_card)
 			end
 
-			it "calls the 'change_old_card_in_play_status' method again" do
-				expect(Card).to receive(:change_old_card_in_play_status).with(new_game.id, flipped_card).and_return(true)
-				determine_next_card
-			end
+			# it "calls the 'change_old_card_in_play_status' method again" do
+			# 	expect(Card).to receive(:change_old_card_in_play_status).with(new_game.id, flipped_card).and_return(true)
+			# 	determine_next_card
+			# end
 
 			context "#the players guess_evaluation returned 'wrong'" do
 				let(:flipped_card) { "6"}
@@ -301,7 +309,7 @@ describe Card do
 
 
 	# CHANGE THE OLD CARD_IN_PLAY STATUS - resets the original card_in_play's status
-	# so that the flipped card can become the new "card in play"
+	# so that the flipped card can become the lone new "card in play"
 
 	it { Card.should respond_to(:change_old_card_in_play_status) }
 	
@@ -314,9 +322,13 @@ describe Card do
 		end 
 
 		it "changes the old_card_in_play's status to 'played'" do
-			Card.change_old_card_in_play_status(@old_card.game_id, @old_card.name)
+			Card.change_old_card_in_play_status(@old_card.game_id)
 			Card.find(@old_card.id).status.should == "played"
+		end
 
+		it "results in the deck having NO 'cards_in_play'" do
+			Card.change_old_card_in_play_status(@old_card.game_id)
+			Card.where(game_id: @old_card.game_id).where(status: "card_in_play").count.should == 0
 		end
 
 

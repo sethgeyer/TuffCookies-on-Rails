@@ -12,7 +12,7 @@ describe "Game_On Page" do
 
 		subject { page }
 		
-		it { should have_content(@player.name) }
+		it { should have_content("Current Player: #{@player.name}") }
 		it { should have_field("number") }   # this is a placeholder test, to_be refactored
 		it { should have_content(0) }
 	#	it { should have_content(@player.game_id) }
@@ -36,6 +36,8 @@ describe "Game_On Page" do
 
 		subject { page }
 		
+
+
 		context "#next card is higher than the current card" do
 			before(:each) do
 				@first_card_in_deck = FactoryGirl.create(:card, game_id: @player1.game_id, name: "9", owner: "dealer", card_order: 2)
@@ -47,6 +49,8 @@ describe "Game_On Page" do
 				it "adds the next card to the pot" do
 					should have_content("Cards in the Pot: 2 [\"9\", \"7\"]")
 				end
+				it { should have_content("Current Player: #{@player1.name}") }
+				it { should have_content("Consecutive Correct Guesses: 1") }
 				it { should have_content("Last Guess Was: correct") }
 				it "shows the next card as the new card_in_play" do
 					should have_content("Card in Play: 9")
@@ -58,6 +62,8 @@ describe "Game_On Page" do
 				it "adds the 'next' next_card card to the pot" do
 					should have_content("Cards in the Pot: 3 [\"8\", \"9\", \"7\"]")
 				end
+				it { should have_content("Current Player: #{@player2.name}") }
+				it { should have_content("Consecutive Correct Guesses: 0") }
 				it { should have_content("Last Guess Was: wrong") }
 				it "shows the 'next' next_card as the card_in_play" do
 					should have_content("Card in Play: 8")	
