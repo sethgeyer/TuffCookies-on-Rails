@@ -57,14 +57,11 @@ describe Card do
 
 	describe "#dealer_flips_card" do
 		
-
 		before(:each) do
 			@cards = Card.where(game_id: new_game.id).where(status: "not_in_play").order(:card_order)
 			allow(Card).to receive(:select_cards).with(new_game.id).and_return(@cards)
 			allow(Card).to receive(:change_old_card_in_play_status).with(new_game.id).and_return(true)
 		end
-
-		
 
 		it "calls 'select_cards' method " do
 			expect(Card).to receive(:select_cards).with(new_game.id).and_return(@cards)
@@ -227,7 +224,6 @@ describe Card do
 			it { should == "action card" }
 		end
 
-
 	end
 
 
@@ -335,35 +331,38 @@ describe Card do
 	end
 
 
-	# # AWARD THE POT - removes cards from the pot and awards them to the applicable player
+	# AWARD THE POT - removes cards from the pot and awards them to the applicable player
 
-	# it { Card.should respond_to(:award_cards_in_the_pot) }
+	it { Card.should respond_to(:award_cards_in_the_pot) }
 
-	# describe "#award_cards_in_the_pot" do
+	describe "#award_cards_in_the_pot" do
 		
-	# 	let(:guess_evaluation) { "wrong" }
-	# 	let(:current_player_number) { Player.where(game_id: @game_id).first.number }
+		let(:guess_evaluation) { "wrong" }
+		let(:current_player_number) { Player.where(game_id: @game_id).last.number }
 		
-	# 	before(:each) do
-	# 		@game_id = new_game.id
-	# 		FactoryGirl.create(:player, name: "Larry", game_id: @game_id)
-	# 		FactoryGirl.create(:player, name: "Noah", game_id: @game_id, number: 2)
-	# 		pot_card = Card.where(game_id: @game_id).first
-	# 		pot_card.owner = "pot"
-	# 		pot_card.save!
+		before(:each) do
+			@game_id = new_game.id
+			FactoryGirl.create(:player, name: "Abe", game_id: @game_id)
+			FactoryGirl.create(:player, name: "Bill", game_id: @game_id, number: 2)
+			FactoryGirl.create(:player, name: "Charlie", game_id: @game_id, number: 3)
+			FactoryGirl.create(:player, name: "Dennis", game_id: @game_id, number: 4)
 
-	# 	end
+			pot_card = Card.where(game_id: @game_id).first
+			pot_card.owner = "pot"
+			pot_card.save!
 
-	# 	it "calls the 'Player.select_awardee'method" do
-	# 		expect(Player).to receive(:select_awardee).with(@game_id, current_player_number, guess_evaluation).and_return("Noah")			
-	# 		Card.award_cards_in_the_pot(@game_id, current_player_number, guess_evaluation)
-	# 	end
+		end
+
+	 	# it "calls the 'Player.select_awardee'method" do
+			# expect(Player).to receive(:select_awardee).with(@game_id, current_player_number, guess_evaluation).and_return("Charlie")			
+			# Card.award_cards_in_the_pot(@game_id, current_player_number, guess_evaluation)
+	 	# end
 
 	# 	it "awards cards in the pot" do
 	# 		Card.award_cards_in_the_pot(@game_id, current_player_number, guess_evaluation)
 	# 		Card.where(game_id: @game_id).where(owner: "pot").count.should == 0
 	#  	end
-	# end
+	end
 
 
 

@@ -10,15 +10,16 @@ class GamesController < ApplicationController
 		Card.create_deck(game.id)
 		Card.dealer_flips_card(game.id)		
 		evaluation = "none"
-		redirect_to "/game_on/#{game.id}/#{evaluation}"
+		redirect_to "/game_on/#{game.id}/#{evaluation}/#{Player.where(game_id: game.id).first.name}"
 
 	end
 
 	def game_on
+		
 		game_id = params[:game_id]
 		game_cards = Card.where(game_id: game_id)
 		@players_in_order = Player.where(game_id: game_id).order(:number)
-		@player = @players_in_order.where(current_player: 1).first || @players_in_order.first
+		@player =  Player.where(game_id: game_id).where(name: params[:current_player]).first #Player.where(game_id: game_id).where(current_player: 1).first || @players_in_order.first
 		@card_in_play = game_cards.where(status: "card_in_play").first.name
 		@cards_remaining_in_deck = game_cards.where(status: "not_in_play").count
 		@cards_in_the_pot = Card.show_cards_in_the_pot(game_id)
@@ -44,9 +45,10 @@ class GamesController < ApplicationController
 			flipped_card = Card.dealer_flips_card(game_id)
 			guess_evaluation = Card.evaluate_guess(game_id, guess, card_in_play, flipped_card)
 			Game.track_consecutive_correct_guesses(game_id, guess_evaluation)
-			#Card.award_cards_in_the_pot(game_id, current_player_number, guess_evaluation)
+			Card.award_cards_in_the_pot(game_id, current_player_number, guess_evaluation)
+			next_current_player = Player.determine_the_next_player(game_id, current_player_number, guess_evaluation)
 			Card.determine_the_card_in_play_for_next_hand(game_id, guess_evaluation, card_in_play, flipped_card)
-			redirect_to "/game_on/#{game_id}/#{guess_evaluation}"
+			redirect_to "/game_on/#{game_id}/#{guess_evaluation}/#{next_current_player}"
 		end
 	end
 

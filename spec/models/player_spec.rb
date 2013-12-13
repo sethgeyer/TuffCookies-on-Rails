@@ -18,7 +18,7 @@ describe Player do
  		before(:each) { Player.create_players("Stu", new_game) }
 
  		it "creates a new player named 'Stu'" do	
- 		 Player.first.name.should == "Stu"
+ 		 Player.where(game_id: new_game.id).first.name.should == "Stu"
  		end
  	
 		it "creates 3 additional virtual players" do
@@ -37,55 +37,54 @@ describe Player do
 
   describe "#determine_the_next_player" do
     before(:each) do
-      @player1 = FactoryGirl.create(:player, name: "Abe",  number: 1, current_player: 1)
+      @player1 = FactoryGirl.create(:player, name: "Abe",  number: 1)
       @player2 = FactoryGirl.create(:player, name: "Bill", number: 2, game_id: @player1.game_id)
       @player3 = FactoryGirl.create(:player, name: "Charlie", number: 3, game_id: @player1.game_id)
+      @player4 = FactoryGirl.create(:player, name: "Dennis", number: 4, game_id: @player1.game_id)
     end
   
     context "the game's order of play is 'ascending'" do
       context "the guess evaluation returned 'wrong'" do
-        it "assigns the next player in ascending order the 'current_player' status" do
-          Player.determine_the_next_player(@player1.game_id, "wrong")
-          Player.where(game_id: @player1.game_id).where(current_player: 1).first.name.should == "Bill"
+        context "the current player is the first player" do
+          it "assigns the 'current_player' status to the second player" do
+            Player.determine_the_next_player(@player1.game_id, 1, "wrong").should == "Bill"
+          end
+        end
+        context "the current players is the last player" do
+          it "assigns the 'current_player' status to the first player" do
+            Player.determine_the_next_player(@player1.game_id, 4, "wrong").should == "Abe"
+          end
         end
       end
-
       context "the guess evaluation returned 'correct'" do
         it "the 'current_player' status remains w/ the current player" do
-          Player.determine_the_next_player(@player1.game_id, "correct")
-          Player.where(game_id: @player1.game_id).where(current_player: 1).first.name.should == "Abe"
+          Player.determine_the_next_player(@player1.game_id, 1, "correct").should == "Abe"
         end
-      end
+      end  
     end
-
 
     context "the game's order of play is 'descending'" do
-      context "the guess evaluation returned 'wrong'" do
-        it "assigns the next player in descending order the 'current_player' status" do
-          Player.determine_the_next_player(@player1.game_id, "wrong")
-          Player.where(game_id: @player1.game_id).where(current_player: 1).first.name.should == "Charlie"
-        end
+      before(:each) do
+        game = Game.find(@player1.game_id)
+        game.direction = "descending"
+        game.save!
       end
 
-      context "the guess evaluation returned 'correct'" do
-        it "the 'current_player' status remains w/ the current player" do
-          Player.determine_the_next_player(@player1.game_id, "correct")
-          Player.where(game_id: @player1.game_id).where(current_player: 1).first.name.should == "Abe"
+      context "the guess evaluation returned 'wrong'" do
+        context "the current player is the first player" do
+          it "assigns the 'current_player' status to the second player" do
+      
+            Player.determine_the_next_player(@player1.game_id, 1, "wrong").should == "Dennis"
+          end
+        end
+        context "the current players is the last player" do
+          it "assigns the 'current_player' status to the first player" do
+            Player.determine_the_next_player(@player4.game_id, 4, "wrong").should == "Charlie"
+          end
         end
       end
     end
-
-
   end
-
-
-
-
-
-
-
-
-
 
 
   # SELECT AWARDEE - identifies which player should receive the awarded cards in the pot
@@ -93,17 +92,34 @@ describe Player do
   it { Player.should respond_to(:select_awardee)}
 
   describe "#select_awardee" do
-      
-    it "should return 'Noah'" do
-      current_player_number = FactoryGirl.create(:player, game_id: 7, name: "Larry").number
-      guess_evaluation = "wrong"
-      awardee = FactoryGirl.create(:player, name: "Noah", game_id: 7, number: 2)
+    
+      context "the guess evaluation returned 'wrong'" do
+        let(:guess_evaluation) { "wrong" }
 
-
-      Player.select_awardee(7, current_player_number, guess_evaluation).should == awardee.name
+        context "the current player is the 1st player" do
+          let(:current_player) { FactoryGirl.create(:player, name: "Abe", number: 1) } 
+          let(:current_player_number) { current_player.number }
+         
+          context "the game's order of play is 'ascending'" do
+            it "should designate the fourth player as the awardee" do   
+              awardee = FactoryGirl.create(:player, name: "Dennis", game_id: current_player.game_id, number: 4)
+              Player.select_awardee(current_player.game_id, current_player_number, guess_evaluation).should == awardee.name
+            end
+          end
+          
+          context "the game's order of play is 'descending'" do
+            before(:each) do
+              game = Game.find(current_player.game_id)
+              game.direction = "descending"
+              game.save!
+            end
+            
+            it "should designate the second player as the awardee" do
+              awardee = FactoryGirl.create(:player, name: "Bill", game_id: current_player.game_id, number: 2)
+              Player.select_awardee(current_player.game_id, current_player_number, guess_evaluation).should == awardee.name
+            end
+          end
+        end
+      end
     end
-
   end
-
-
-end

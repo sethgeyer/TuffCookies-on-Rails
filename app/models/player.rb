@@ -1,5 +1,5 @@
 class Player < ActiveRecord::Base
-  attr_accessible :game_id, :name, :number, :current_player, :direction
+  attr_accessible :game_id, :name, :number
 
   belongs_to :game
 
@@ -14,34 +14,39 @@ class Player < ActiveRecord::Base
   	end
   end
 
-  def self.determine_the_next_player(game_id, guess_evaluation)
-    if guess_evaluation == "wrong"
-      direction_of_play = Game.find(game_id).direction
-      current_player = Player.where(game_id: game_id).where(current_player: 1).first || Player.where(game_id: game_id).first
-      current_player.current_player = 0
-      current_player.save!
-      
-      if direction_of_play = "ascending"
-        next_player = Player.where(game_id: game_id).where(number: current_player.number + 1).first
-        next_player.current_player = 1
-        next_player.save!
-      else
-        next_player = Player.where(game_id: game_id).where(number: 3).first
-        next_player.current_player = 1
-        next_player.save!
-      end
+  def self.determine_the_next_player(game_id, current_player_number, guess_evaluation)
+    
+    direction_of_play = Game.find(game_id).direction
 
+    ascending = { 1=>2, 2=>3, 3=>4, 4=>1}
+    descending = { 1=>4, 2=>1, 3=>2, 4=>3}
+
+    if guess_evaluation == "correct"
+      Player.where(game_id: game_id).where(number: current_player_number.to_i).first.name
+    elsif direction_of_play == "ascending"
+      Player.where(game_id: game_id).where(number: ascending[current_player_number.to_i]).first.name
+    elsif direction_of_play == "descending"
+      Player.where(game_id: game_id).where(number: descending[current_player_number.to_i]).first.name      
     end
   end
 
-
-
   def self.select_awardee(game_id, current_player_number, guess_evaluation)
+    
+    direction_of_play = Game.find(game_id).direction    
+
+    descending = { 1=>2, 2=>3, 3=>4, 4=>1}
+    ascending = { 1=>4, 2=>1, 3=>2, 4=>3}
+
     if guess_evaluation == "wrong"
-      Player.where(game_id: game_id).where(number: 2).first.name
+      if direction_of_play == "ascending" 
+        Player.where(game_id: game_id).where(number: ascending[current_player_number.to_i]).first.name
+      elsif direction_of_play == "descending"
+        Player.where(game_id: game_id).where(number: descending[current_player_number.to_i]).first.name
+      end
     else
       "ERROR ON SELECT AWARDEE"
     end
+
   end
 
 

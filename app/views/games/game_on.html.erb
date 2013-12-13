@@ -2,31 +2,30 @@
 
 <%= form_tag player_guess_path(@player.game_id) do %>
 
-<p>Current Player: <%= @player.name%> </p>
-<p>Player Order: <%=text_field_tag "number", @player.number %></p> 
-<p>Player Score: <%= Card.where(owner: @player.name).count%></p>
-<p>Game ID: <%= @player.game_id%></p>
+<p><b>Current Player: <%= @player.name%> </b></p> 
+<p>Player Score: <%= Card.where(owner: @player.name).count%></p> 
 
 <p>Cards in Deck: <%= @cards_remaining_in_deck %></p>
-<p>Card in Play: <%=@card_in_play%> </p>
+<p><b>Card in Play: <%=@card_in_play%> </b></p>
 <p>Cards in the Pot: <%=@cards_in_the_pot.count%> <%=@cards_in_the_pot%> </p>
 <p>Consecutive Correct Guesses: <%=@consecutive_correct_guesses%></p>
-<p>Last Guess Was: <%=@evaluation%></p>
+<p><b>Last Guess Was: <%=@evaluation%></b></p>
 
 <%= button_tag "Higher", name: "higher", value: "higher" %>
 <%= button_tag "Lower", name: "lower", value: "lower" %>
-<%= button_tag "Sweep", name: "sweep" %>
+<%if @consecutive_correct_guesses >= 3 %>
+	<%= button_tag "Sweep", name: "sweep" %>
+<%end%>
 
-<br><br><br>
+<br><br>
 ######<br>
-Cheat for Testing Features <br>
+Cheat for End User Testing  <br>
 Cards in Deck: <%=@deck_array%><br>
+Player Order: <%=text_field_tag "number", @player.number %><br> 
+Game ID: <%= @player.game_id%><br>
 ######
-<br><br><br>
-
 <%end%> 
 
-<br><br><br>
 <h3><b>Player Order and Score </b></h3>  
 <% for each in @players_in_order %>
 <%=each.name%> - <%=Card.where(game_id: each.game_id).where(owner: each.name).count%>

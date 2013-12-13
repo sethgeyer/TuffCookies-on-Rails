@@ -4,7 +4,7 @@ TcOnRails::Application.routes.draw do
   get "/rules"              => "games#rules",        as: :rules
   get "/about"              => "games#about",        as: :about
   post "/lets_play"         => "games#lets_play",    as: :lets_play
-  get "/game_on/:game_id/:evaluation"   => "games#game_on"
+  get "/game_on/:game_id/:evaluation/:current_player"   => "games#game_on", as: :game_on
   post "/player_guess/:game_id"      => "games#player_guess", as: :player_guess
   get "/route_1_page"       => "games#route_1"  
   get "/route_2_page"       => "games#route_2"
