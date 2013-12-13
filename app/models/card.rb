@@ -102,9 +102,9 @@ class Card < ActiveRecord::Base
 	end
 
 
-	def self.award_cards_in_the_pot(game_id, current_player_number, guess_evaluation)
-		awardee = Player.select_awardee(game_id, current_player_number, guess_evaluation)
-		if guess_evaluation == "wrong"
+	def self.award_cards_in_the_pot(game_id, current_player_number, guess_evaluation_or_sweep)
+		awardee = Player.select_awardee(game_id, current_player_number, guess_evaluation_or_sweep)
+		if guess_evaluation_or_sweep == "wrong" || guess_evaluation_or_sweep == "sweep"
 	 		pot_cards = Card.where(game_id: game_id).where(owner: "pot")
 	 		pot_cards.each do |card|
 	 		card.owner = awardee

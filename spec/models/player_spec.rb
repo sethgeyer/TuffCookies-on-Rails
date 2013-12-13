@@ -60,7 +60,15 @@ describe Player do
         it "the 'current_player' status remains w/ the current player" do
           Player.determine_the_next_player(@player1.game_id, 1, "correct").should == "Abe"
         end
-      end  
+      end
+
+      context "the guess evaluation returned 'sweep'" do
+        it "assigns the 'current_player' status to the second player" do
+          Player.determine_the_next_player(@player1.game_id, 1, "sweep").should == "Bill"
+        end
+      end
+
+
     end
 
     context "the game's order of play is 'descending'" do
@@ -69,6 +77,13 @@ describe Player do
         game.direction = "descending"
         game.save!
       end
+
+      context "the guess evaluation returned 'sweep'" do
+        it "assigns the 'current_player' status to the second player" do
+          Player.determine_the_next_player(@player1.game_id, 1, "sweep").should == "Dennis"
+        end
+      end
+
 
       context "the guess evaluation returned 'wrong'" do
         context "the current player is the first player" do
@@ -93,33 +108,59 @@ describe Player do
 
   describe "#select_awardee" do
     
-      context "the guess evaluation returned 'wrong'" do
-        let(:guess_evaluation) { "wrong" }
+    context "the guess evaluation returned 'wrong'" do
+      let(:guess_evaluation_or_sweep) { "wrong" }
 
-        context "the current player is the 1st player" do
-          let(:current_player) { FactoryGirl.create(:player, name: "Abe", number: 1) } 
-          let(:current_player_number) { current_player.number }
-         
-          context "the game's order of play is 'ascending'" do
-            it "should designate the fourth player as the awardee" do   
-              awardee = FactoryGirl.create(:player, name: "Dennis", game_id: current_player.game_id, number: 4)
-              Player.select_awardee(current_player.game_id, current_player_number, guess_evaluation).should == awardee.name
-            end
+      context "the current player is the 1st player" do
+        let(:current_player) { FactoryGirl.create(:player, name: "Abe", number: 1) } 
+        let(:current_player_number) { current_player.number }
+       
+        context "the game's order of play is 'ascending'" do
+          it "should designate the fourth player as the awardee" do   
+            awardee = FactoryGirl.create(:player, name: "Dennis", game_id: current_player.game_id, number: 4)
+            Player.select_awardee(current_player.game_id, current_player_number, guess_evaluation_or_sweep).should == awardee.name
+          end
+        end
+        
+        context "the game's order of play is 'descending'" do
+          before(:each) do
+            game = Game.find(current_player.game_id)
+            game.direction = "descending"
+            game.save!
           end
           
-          context "the game's order of play is 'descending'" do
-            before(:each) do
-              game = Game.find(current_player.game_id)
-              game.direction = "descending"
-              game.save!
-            end
-            
-            it "should designate the second player as the awardee" do
-              awardee = FactoryGirl.create(:player, name: "Bill", game_id: current_player.game_id, number: 2)
-              Player.select_awardee(current_player.game_id, current_player_number, guess_evaluation).should == awardee.name
-            end
+          it "should designate the second player as the awardee" do
+            awardee = FactoryGirl.create(:player, name: "Bill", game_id: current_player.game_id, number: 2)
+            Player.select_awardee(current_player.game_id, current_player_number, guess_evaluation_or_sweep).should == awardee.name
           end
         end
       end
     end
+
+    context "the current player chose to sweep the cards from the pot" do
+      let(:guess_evaluation_or_sweep) { "sweep" }
+
+      context "the current player is the 1st player" do
+        let(:current_player) { FactoryGirl.create(:player, name: "Abe", number: 1) } 
+        let(:current_player_number) { current_player.number }
+       
+        context "the game's order of play is 'ascending'" do
+          it "should designate the 1st player as the awardee" do   
+            awardee = current_player
+            Player.select_awardee(current_player.game_id, current_player_number, guess_evaluation_or_sweep).should == awardee.name
+          end
+        end
+      end
+    end    
+
+
+
+
+
+
+
+
+
+
   end
+end

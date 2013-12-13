@@ -30,19 +30,21 @@ class Player < ActiveRecord::Base
     end
   end
 
-  def self.select_awardee(game_id, current_player_number, guess_evaluation)
+  def self.select_awardee(game_id, current_player_number, guess_evaluation_or_sweep)
     
     direction_of_play = Game.find(game_id).direction    
 
     descending = { 1=>2, 2=>3, 3=>4, 4=>1}
     ascending = { 1=>4, 2=>1, 3=>2, 4=>3}
 
-    if guess_evaluation == "wrong"
+    if guess_evaluation_or_sweep == "wrong"
       if direction_of_play == "ascending" 
         Player.where(game_id: game_id).where(number: ascending[current_player_number.to_i]).first.name
       elsif direction_of_play == "descending"
         Player.where(game_id: game_id).where(number: descending[current_player_number.to_i]).first.name
       end
+    elsif guess_evaluation_or_sweep == "sweep"
+      Player.where(game_id: game_id).where(number: current_player_number).first.name
     else
       "ERROR ON SELECT AWARDEE"
     end

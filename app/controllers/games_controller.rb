@@ -37,15 +37,20 @@ class GamesController < ApplicationController
 	def player_guess #(Post from game_on page)
 		game_id = params[:game_id]
 		current_player_number = params[:number]
-		if params[:sweep]
-			redirect_to "/route_2_page" 
-		elsif params[:end_game]
+		if params[:end_game]
 			redirect_to root_path
+
 		else
-			guess = params[:higher] || params[:lower]
-			card_in_play = Card.where(game_id: game_id).where(status: "card_in_play").first.name
-			flipped_card = Card.dealer_flips_card(game_id)
-			guess_evaluation = Card.evaluate_guess(game_id, guess, card_in_play, flipped_card)
+			if params[:sweep]
+				guess_evaluation = params[:sweep]
+				card_in_play = 'n/a'
+				flipped_card = 'n/a'
+			else
+				guess = params[:higher] || params[:lower]
+				card_in_play = Card.where(game_id: game_id).where(status: "card_in_play").first.name
+				flipped_card = Card.dealer_flips_card(game_id)
+				guess_evaluation = Card.evaluate_guess(game_id, guess, card_in_play, flipped_card)
+			end
 			Game.track_consecutive_correct_guesses(game_id, guess_evaluation)
 			Card.award_cards_in_the_pot(game_id, current_player_number, guess_evaluation)
 			next_current_player = Player.determine_the_next_player(game_id, current_player_number, guess_evaluation)
@@ -53,15 +58,5 @@ class GamesController < ApplicationController
 			redirect_to "/game_on/#{game_id}/#{guess_evaluation}/#{next_current_player}"
 		end
 	end
-
-
-	def route_1
-		render :route_1_page
-	end
-
-	def route_2
-		render :route_2_page
-	end
-
 end
 

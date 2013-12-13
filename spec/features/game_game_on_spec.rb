@@ -13,8 +13,9 @@ describe "Game_On Page" do
 		subject { page }
 		
 		it { should have_content("Current Player: #{@player.name}") }
-		it { should have_field("number") }   # this is a placeholder test, to_be refactored
-		it { should have_content(0) }
+		
+
+		#it { should find_by_id("number") }   # this is a placeholder test, to_be refactored
 		it { should have_content("Cards in Deck: 51") }
 		it { should have_content("Cards in the Pot: 1 [\"#{@card_in_play}\"]") }
 		it { should have_content("Card in Play: #{@card_in_play}")}
@@ -47,35 +48,45 @@ describe "Game_On Page" do
 		end
 		
 		context "the player wants to 'sweep' the cards from the pot" do
+			
 			context "there have been less than 3 consecutive correct guesses" do
 				it { should_not have_button("Sweep") }
 			end
-
+			
 			context "there have been 3 or more consecutive correct guesses" do
+
 				before(:each) do
 					game = Game.find(@player1.game_id)
 					game.consecutive_correct_guesses = 3
 					game.save!
+					# the card in play is a 7
+					first_card_in_deck = FactoryGirl.create(:card, game_id: @player1.game_id, name: "9", owner: "dealer", card_order: 2)
+					second_card_in_deck = FactoryGirl.create(:card, game_id: @player1.game_id, name: "8", owner: "dealer", card_order: 3)
 					visit "/game_on/#{@player1.game_id}/none/#{@player1.name}"
+					a_second_card_in_the_pot = FactoryGirl.create(:card, owner: "pot", status: "played", game_id: @player1.game_id)
+					a_third_card_in_the_pot = FactoryGirl.create(:card, owner: "pot", status: "played", game_id: @player1.game_id)					
+					click_on "Sweep"
 				end
-				it { should have_button("Sweep") }
 			
-				xit "should award the cards in the pot to the current player" do
-					pending
+				it "should award the cards in the pot to the current player" do
+					should have_content("Abe - 3")
 				end
 
-				xit "adds the dealer-flipped-card to the pot" do
-						should have_content("Cards in the Pot: 1 [\"9\"]")
+				it "adds the dealer-flipped-card to the pot" do
+					should have_content("Cards in the Pot: 1 [\"9\"]")
 				end
-				xit "shows the next player in order as the 'Current Player'" do
+				
+				it "shows the next player in order as the 'Current Player'" do
 					should have_content("Current Player: #{@player2.name}")
 				end
-				xit { should have_content("Consecutive Correct Guesses: 0") }
+				
+				it { should have_content("Consecutive Correct Guesses: 0") }
+				
 				xit { should have_content("Last Guess Was: sweep") }   #### Need to have this be a flash message before moving to the next player
-				xit "shows the dealer-flipped-card as the 'Card in Play'" do
+				
+				it "shows the dealer-flipped-card as the 'Card in Play'" do
 					should have_content("Card in Play: 9")	
 				end
-
 			end
 		end
 

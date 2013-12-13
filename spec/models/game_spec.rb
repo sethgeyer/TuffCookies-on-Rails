@@ -36,7 +36,14 @@ describe Game do
 			end
 		end
 
-		context "player guess_evaluation returns something OTHER THAN 'correct'" do
+		context "player guess_evaluation returns 'sweep'" do
+			let(:guess_evaluation) { "sweep" }
+			it "zeros out the consecutive_correct_guesses_total" do
+				@calc_new_total.should == 0
+			end
+		end
+
+		context "player guess_evaluation returns something OTHER THAN 'correct or wrong or sweep'" do
 			let(:updated_total) { 3 }
 			context "player guess_evaluation returns 'same'" do
 				let(:guess_evaluation) { "same" }

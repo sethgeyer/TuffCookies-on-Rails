@@ -10,7 +10,7 @@ class Game < ActiveRecord::Base
 		game = Game.find(game_id)
 		if guess_evaluation == "correct"
 			game.consecutive_correct_guesses += 1
-		elsif guess_evaluation == "wrong"
+		elsif guess_evaluation == "wrong" || guess_evaluation == "sweep"
 			game.consecutive_correct_guesses = 0
 		else
 		end

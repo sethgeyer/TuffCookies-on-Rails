@@ -119,7 +119,7 @@ describe Card do
 				guess_evaluation			
 			end
 
-			context "#the flipped card is higher" do							
+			context "the flipped card is higher" do							
 				before(:each) do
 				 allow(Card).to receive(:evaluate_flipped_card).with(card_in_play, flipped_card).and_return("higher")			
 				end
@@ -134,7 +134,7 @@ describe Card do
 				end		
 			end
 
-			context "#the flipped card is lower" do			
+			context "the flipped card is lower" do			
 				before(:each) do
 				 allow(Card).to receive(:evaluate_flipped_card).with(card_in_play, flipped_card).and_return("lower")			
 				end
@@ -150,7 +150,7 @@ describe Card do
 				end		
 			end
 
-			context "#the flipped card is the same" do			
+			context "the flipped card is the same" do			
 				before(:each) do
 				 allow(Card).to receive(:evaluate_flipped_card).with(card_in_play, flipped_card).and_return("same")			
 				end
@@ -166,7 +166,7 @@ describe Card do
 				end		
 			end
 
-			context "#the flipped card is an action card" do			
+			context "the flipped card is an action card" do			
 				before(:each) do
 				 allow(Card).to receive(:evaluate_flipped_card).with(card_in_play, flipped_card).and_return("action card")			
 				end
@@ -245,7 +245,7 @@ describe Card do
 		# 	determine_next_card
 		# end
 
-		context "#the players guess_evaluation returned 'correct'" do
+		context "the players guess_evaluation returned 'correct'" do
 			let(:guess_evaluation) { "correct"}		
 			
 			it "sets the 'card in play' equal to the card that was just flipped" do
@@ -254,7 +254,7 @@ describe Card do
 			end
 		end
 		
-		context "#the players guess_evaluation did NOT return 'correct'" do
+		context "the players guess_evaluation did NOT return 'correct'" do
 			let(:flipped_card) { "7"}
 			let(:guess_evaluation) { "same"}
 			let(:next_flipped_card) {"11"}
@@ -268,7 +268,29 @@ describe Card do
 			# 	determine_next_card
 			# end
 
-			context "#the players guess_evaluation returned 'wrong'" do
+			
+			context "the players guess_evaluation returned 'same'" do
+				let(:flipped_card) { "6"}
+				let(:guess_evaluation) { "sweep"}		
+				
+				it "sets the 'card in play' equal to a newly flipped card" do
+					should == next_flipped_card
+				end
+			end	
+
+
+
+
+
+
+
+
+
+
+
+
+
+			context "the players guess_evaluation returned 'wrong'" do
 				let(:flipped_card) { "6"}
 				let(:guess_evaluation) { "wrong"}		
 				
@@ -282,7 +304,7 @@ describe Card do
 
 			end		
 		
-			context "#the players guess_evaluation returned 'same'" do
+			context "the players guess_evaluation returned 'same'" do
 				let(:flipped_card) { "7"}
 				let(:guess_evaluation) { "same"}		
 
@@ -291,7 +313,7 @@ describe Card do
 				end
 			end	
 
-			context "#the players guess_evaluation returned 'action card'" do
+			context "the players guess_evaluation returned 'action card'" do
 				let(:flipped_card) { "action card"}
 				let(:guess_evaluation) { "action card"}		
 				
@@ -346,29 +368,36 @@ describe Card do
 			FactoryGirl.create(:player, name: "Bill", game_id: @game_id, number: 2)
 			FactoryGirl.create(:player, name: "Charlie", game_id: @game_id, number: 3)
 			FactoryGirl.create(:player, name: "Dennis", game_id: @game_id, number: 4)
-
 			FactoryGirl.create(:card, name: "7", card_order: 1, owner: "pot", game_id: @game_id)
 			FactoryGirl.create(:card, name: "6", card_order: 2, owner: "pot", game_id: @game_id)
-
-			
 		end
 
 	 	it "calls the 'Player.select_awardee'method" do
-			expect(Player).to receive(:select_awardee).with(@game_id, current_player_number, guess_evaluation).and_return("Charlie")			
+			expect(Player).to receive(:select_awardee).with(@game_id, current_player_number, guess_evaluation).and_return("Dennis")			
 			Card.award_cards_in_the_pot(@game_id, current_player_number, guess_evaluation)
 	 	end
 
 	 	it "removes the cards from the pot" do
-			allow(Player).to receive(:select_awardee).with(@game_id, current_player_number, guess_evaluation).and_return("Charlie")						
+			allow(Player).to receive(:select_awardee).with(@game_id, current_player_number, guess_evaluation).and_return("Dennis")						
 			Card.award_cards_in_the_pot(@game_id, current_player_number, guess_evaluation)
 			Card.where(game_id: @game_id).where(owner: "pot").count.should == 0
 	 	end
-	 	it "awards the cards to the selected awardee" do
-			allow(Player).to receive(:select_awardee).with(@game_id, current_player_number, guess_evaluation).and_return("Charlie")						
-			Card.award_cards_in_the_pot(@game_id, current_player_number, guess_evaluation)
-			Card.where(game_id: @game_id).where(owner: "Charlie").count.should == 2
+	 	
+	 	context "the current player's guess was wrong" do
+		 	it "awards the cards to the selected awardee" do
+				allow(Player).to receive(:select_awardee).with(@game_id, current_player_number, guess_evaluation).and_return("Dennis")						
+				Card.award_cards_in_the_pot(@game_id, current_player_number, guess_evaluation)
+				Card.where(game_id: @game_id).where(owner: "Dennis").count.should == 2
+		 	end
 	 	end
 
+	 	context "the current player chose to sweep the cards" do
+		 	it "awards the cards to the current player" do
+				allow(Player).to receive(:select_awardee).with(@game_id, current_player_number, "sweep").and_return("Abe")						
+				Card.award_cards_in_the_pot(@game_id, current_player_number, "sweep")
+				Card.where(game_id: @game_id).where(owner: "Abe").count.should == 2
+		 	end
+	 	end
 
 
 	end
