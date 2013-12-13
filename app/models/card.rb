@@ -103,14 +103,14 @@ class Card < ActiveRecord::Base
 
 
 	def self.award_cards_in_the_pot(game_id, current_player_number, guess_evaluation)
-	#  	awardee = Player.select_awardee(game_id, current_player_number, guess_evaluation)
-	#  	if guess_evaluation == "wrong"
-	#  		pot_cards = Card.where(game_id: game_id).where(owner: "pot")
-	#  		pot_cards.each do |card|
-	#  		card.owner = awardee
-	#  		card.save!
-	#  	end
-	#  	end
+		awardee = Player.select_awardee(game_id, current_player_number, guess_evaluation)
+		if guess_evaluation == "wrong"
+	 		pot_cards = Card.where(game_id: game_id).where(owner: "pot")
+	 		pot_cards.each do |card|
+	 		card.owner = awardee
+	 		card.save!
+	 	end
+	 	end
 	end
 
 

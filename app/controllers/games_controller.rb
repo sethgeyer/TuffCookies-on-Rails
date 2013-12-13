@@ -39,6 +39,8 @@ class GamesController < ApplicationController
 		current_player_number = params[:number]
 		if params[:sweep]
 			redirect_to "/route_2_page" 
+		elsif params[:end_game]
+			redirect_to root_path
 		else
 			guess = params[:higher] || params[:lower]
 			card_in_play = Card.where(game_id: game_id).where(status: "card_in_play").first.name

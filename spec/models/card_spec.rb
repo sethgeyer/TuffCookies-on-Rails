@@ -347,21 +347,30 @@ describe Card do
 			FactoryGirl.create(:player, name: "Charlie", game_id: @game_id, number: 3)
 			FactoryGirl.create(:player, name: "Dennis", game_id: @game_id, number: 4)
 
-			pot_card = Card.where(game_id: @game_id).first
-			pot_card.owner = "pot"
-			pot_card.save!
+			FactoryGirl.create(:card, name: "7", card_order: 1, owner: "pot", game_id: @game_id)
+			FactoryGirl.create(:card, name: "6", card_order: 2, owner: "pot", game_id: @game_id)
 
+			
 		end
 
-	 	# it "calls the 'Player.select_awardee'method" do
-			# expect(Player).to receive(:select_awardee).with(@game_id, current_player_number, guess_evaluation).and_return("Charlie")			
-			# Card.award_cards_in_the_pot(@game_id, current_player_number, guess_evaluation)
-	 	# end
+	 	it "calls the 'Player.select_awardee'method" do
+			expect(Player).to receive(:select_awardee).with(@game_id, current_player_number, guess_evaluation).and_return("Charlie")			
+			Card.award_cards_in_the_pot(@game_id, current_player_number, guess_evaluation)
+	 	end
 
-	# 	it "awards cards in the pot" do
-	# 		Card.award_cards_in_the_pot(@game_id, current_player_number, guess_evaluation)
-	# 		Card.where(game_id: @game_id).where(owner: "pot").count.should == 0
-	#  	end
+	 	it "removes the cards from the pot" do
+			allow(Player).to receive(:select_awardee).with(@game_id, current_player_number, guess_evaluation).and_return("Charlie")						
+			Card.award_cards_in_the_pot(@game_id, current_player_number, guess_evaluation)
+			Card.where(game_id: @game_id).where(owner: "pot").count.should == 0
+	 	end
+	 	it "awards the cards to the selected awardee" do
+			allow(Player).to receive(:select_awardee).with(@game_id, current_player_number, guess_evaluation).and_return("Charlie")						
+			Card.award_cards_in_the_pot(@game_id, current_player_number, guess_evaluation)
+			Card.where(game_id: @game_id).where(owner: "Charlie").count.should == 2
+	 	end
+
+
+
 	end
 
 

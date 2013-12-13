@@ -22,87 +22,105 @@ describe "Game_On Page" do
 		it { should have_button("Lower") }
 		it { should have_content("#{@player.name} - 0") }
 		it { should have_content("Noah - 0") }
+		it { should have_button("End Game")}
 	end
 
-	describe "#View after the player guess" do
+	describe "#View After the Player's Guess" do
 		before(:each) do
-			@player1 = FactoryGirl.create(:player, name: "Stu", number: 1)
-			@player2 = FactoryGirl.create(:player, name: "Noah", number: 2, game_id: @player1.game_id)
+			@player1 = FactoryGirl.create(:player, name: "Abe", number: 1)
+			@player2 = FactoryGirl.create(:player, name: "Bill", number: 2, game_id: @player1.game_id)
+			@player3 = FactoryGirl.create(:player, name: "Charlie", number: 3, game_id: @player1.game_id)
+			@player4 = FactoryGirl.create(:player, name: "Dennis", number: 4, game_id: @player1.game_id)
 			@card_in_play = FactoryGirl.create(:card, game_id: @player1.game_id, name: "7", status: "card_in_play", owner: "pot", card_order: 1)
 			visit "/game_on/#{@player1.game_id}/none/#{@player1.name}"				
 		end		
 
 		subject { page }
+
+		context "the player want to end the game" do
+			context "the players pushes the 'End Game' button" do
+				it "returns the player to the root path" do
+					click_on "End Game"
+					current_path.should == root_path
+				end
+			end
+		end
 		
+		context "the player wants to 'sweep' the cards from the pot" do
+			context "there have been less than 3 consecutive correct guesses" do
+				it { should_not have_button("Sweep") }
+			end
 
-		context "there are less than 3 consecutive correct guesses" do
-			it { should_not have_button("Sweep") }
-		end
+			context "there have been 3 or more consecutive correct guesses" do
+				before(:each) do
+					game = Game.find(@player1.game_id)
+					game.consecutive_correct_guesses = 3
+					game.save!
+					visit "/game_on/#{@player1.game_id}/none/#{@player1.name}"
+				end
+				it { should have_button("Sweep") }
+			
+				xit "should award the cards in the pot to the current player" do
+					pending
+				end
 
-		context "there are 3 or more consecutive correct guesses" do
-			it "shows the 'Sweep' button as an option" do
-				game = Game.find(@player1.game_id)
-				game.consecutive_correct_guesses = 3
-				game.save!
-				visit "/game_on/#{@player1.game_id}/none/#{@player1.name}"
-				should have_button("Sweep")
+				xit "adds the dealer-flipped-card to the pot" do
+						should have_content("Cards in the Pot: 1 [\"9\"]")
+				end
+				xit "shows the next player in order as the 'Current Player'" do
+					should have_content("Current Player: #{@player2.name}")
+				end
+				xit { should have_content("Consecutive Correct Guesses: 0") }
+				xit { should have_content("Last Guess Was: sweep") }   #### Need to have this be a flash message before moving to the next player
+				xit "shows the dealer-flipped-card as the 'Card in Play'" do
+					should have_content("Card in Play: 9")	
+				end
+
 			end
 		end
 
+		context "the player wants to guess higher or lower" do
+			context "next card is higher than the current card" do
+				before(:each) do
+					# the card in play is a 7
+					@first_card_in_deck = FactoryGirl.create(:card, game_id: @player1.game_id, name: "9", owner: "dealer", card_order: 2)
+					@second_card_in_deck = FactoryGirl.create(:card, game_id: @player1.game_id, name: "8", owner: "dealer", card_order: 3)
+				end
 
-		context "#next card is higher than the current card" do
-			before(:each) do
-				@first_card_in_deck = FactoryGirl.create(:card, game_id: @player1.game_id, name: "9", owner: "dealer", card_order: 2)
-				@second_card_in_deck = FactoryGirl.create(:card, game_id: @player1.game_id, name: "8", owner: "dealer", card_order: 3)
-			end
+				context "player correctly guesses 'higher'" do
+					before(:each) { click_on "Higher" }
+					it "adds the next dealer-flipped-card to the pot" do
+						should have_content("Cards in the Pot: 2 [\"9\", \"7\"]")
+					end
+					it { should have_content("Current Player: #{@player1.name}") }
+					it { should have_content("Consecutive Correct Guesses: 1") }
+					it { should have_content("Last Guess Was: correct") }
+					it "shows the dealer-flipped-card as the new 'Card in Play'" do
+						should have_content("Card in Play: 9")
+					end
+				end
 
-			context "#player guesses higher" do
-				before(:each) { click_on "Higher" }
-				it "adds the next card to the pot" do
-					should have_content("Cards in the Pot: 2 [\"9\", \"7\"]")
+				context "player incorrectly guesses lower" do
+					before(:each) { click_on "Lower" }
+					it "awards the cards in the pot and the dealer-flipped-card to the 4th player because of the incorrect guess" do
+						should have_content("Dennis - 2")
+					end
+					it "adds the 'next' dealer-flipped-card to the pot" do
+						should have_content("Cards in the Pot: 1 [\"8\"]")
+					end
+					it "shows the next player in order as the 'Current Player'" do
+						should have_content("Current Player: #{@player2.name}")
+					end
+					it { should have_content("Consecutive Correct Guesses: 0") }
+					it { should have_content("Last Guess Was: wrong") }   #### Need to have this be a flash message before moving to the next player
+					it "shows the 'next' dealer-flipped-card as the 'Card in Play'" do
+						should have_content("Card in Play: 8")	
+					end
 				end
-				it { should have_content("Current Player: #{@player1.name}") }
-				it { should have_content("Consecutive Correct Guesses: 1") }
-				it { should have_content("Last Guess Was: correct") }
-				it "shows the next card as the new card_in_play" do
-					should have_content("Card in Play: 9")
-				end
-			end
-
-			context "#player guesses lower" do
-				before(:each) { click_on "Lower" }
-				it "adds the 'next' next_card card to the pot" do
-					should have_content("Cards in the Pot: 3 [\"8\"]")
-				end
-				it { should have_content("Current Player: #{@player2.name}") }
-				it { should have_content("Consecutive Correct Guesses: 0") }
-				it { should have_content("Last Guess Was: wrong") }
-				it "shows the 'next' next_card as the card_in_play" do
-					should have_content("Card in Play: 8")	
-				end
-				# it { should have_content("Noah - 2") }
 			end
 		end
 
-		# context " next card is the same as the the current card" do
-		# 	before(:each) do
-		# 		@first_card_in_deck = FactoryGirl.create(:card, game_id: @player1.game_id, name: "7", owner: "dealer", card_order: 2)
-		# 		@second_card_in_deck = FactoryGirl.create(:card, game_id: @player1.game_id, name: "5", owner: "dealer", card_order: 3)
-
-		# 	end
-
-		# 	context " player guesses lower" do
-		# 		before(:each) { click_on "Lower" }
-		# 		it "adds the next card to the pot" do
-		# 			should have_content("Cards in the Pot: 2 [\"7\", \"7\"]")
-		# 		end
-		# 		it { should have_content("Last Guess Was: same") }
-		# 		it "shows the next card as the new card_in_play" do
-		# 			should have_content("Card in Play: 7")
-		# 		end
-		# 	end
-		# end
-
+	
 	end
 
 end
