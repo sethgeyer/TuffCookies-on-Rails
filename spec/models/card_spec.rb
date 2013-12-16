@@ -16,13 +16,17 @@ describe Card do
 		it "should create a deck of 52 numbered cards" do
 			Card.where(game_id: new_game.id).where(card_type: "numbered").all.count.should == 52
 		end
+
+		it "should create 2 'reverse cards'" do
+			Card.where(game_id: new_game.id).where(card_type: "action_card").where(name: "Reverse").all.count.should == 2
+		end
 		
 		it "should 'virtually shuffle' the cards by assigning a random 'order' to the cards" do
 			# how do I test for the random assignment of an order number
 			count = 0
 			cards = Card.where(game_id: new_game.id)
 			cards.each { | card | count += card.card_order }
-			count.should == 1378
+			count.should == 1485
 		end
 	end
 	
@@ -46,7 +50,7 @@ describe Card do
 			end
 
 			it "inclues all 'not_in_play' cards in the game's deck" do		
-				subject.count.should == 51
+				subject.count.should == Card.where(game_id: new_game.id).count - 1
 			end
 		end
 	end
@@ -168,18 +172,44 @@ describe Card do
 
 			context "the flipped card is an action card" do			
 				before(:each) do
-				 allow(Card).to receive(:evaluate_flipped_card).with(card_in_play, flipped_card).and_return("action card")			
+				 allow(Card).to receive(:evaluate_flipped_card).with(card_in_play, flipped_card).and_return("action_card")			
 				end
 				
 				context "the guess is 'lower'" do
 					let(:guess) { "lower" }
-					it { should == "action card" }
+					it { should == "action_card" }
 				end
 				
 				context "the guess is 'higher'" do
 					let(:guess) { "higher"}
-					it { should == "action card" }
-				end		
+					it { should == "action_card" }
+				end
+
+				context "the action card ia a 'Reverse' card" do
+					let(:guess) { "lower" }
+					let(:flipped_card) { "Reverse" }
+					it "should reverse the order of play" do
+						guess_evaluation
+						Game.find(new_game.id).direction.should == "descending"
+					end
+				end
+
+				context "the action card ia a 'Reverse' card" do
+					let(:guess) { "lower" }
+					let(:flipped_card) { "Reverse" }
+					before(:each) do
+						game = Game.find(new_game.id)
+						game.direction = "descending"
+						game.save!
+					end
+
+					it "should reverse the order of play" do
+						guess_evaluation
+						Game.find(new_game.id).direction.should == "ascending"
+					end
+				end
+
+
 			end
 		end	
 
@@ -221,7 +251,7 @@ describe Card do
 		context "flipped_card is same as card_in_play" do
 			let(:card_in_play) { "7"}
 			let(:flipped_card) { "STRING"}	
-			it { should == "action card" }
+			it { should == "action_card" }
 		end
 
 	end
@@ -240,11 +270,6 @@ describe Card do
 		# let(:stub_change_status) { allow(Card).to receive(:change_old_card_in_play_status).with(new_game.id, card_in_play).and_return(true) }
 		subject { determine_next_card  }
 
-		# it "calls the 'change_old_card_in_play_status' method" do
-		# 	expect(Card).to receive(:change_old_card_in_play_status).with(new_game.id, card_in_play).and_return(true)
-		# 	determine_next_card
-		# end
-
 		context "the players guess_evaluation returned 'correct'" do
 			let(:guess_evaluation) { "correct"}		
 			
@@ -254,6 +279,13 @@ describe Card do
 			end
 		end
 		
+		
+
+
+
+
+
+
 		context "the players guess_evaluation did NOT return 'correct'" do
 			let(:flipped_card) { "7"}
 			let(:guess_evaluation) { "same"}
@@ -263,12 +295,6 @@ describe Card do
 				allow(Card).to receive(:dealer_flips_card).with(new_game.id).and_return(next_flipped_card)
 			end
 
-			# it "calls the 'change_old_card_in_play_status' method again" do
-			# 	expect(Card).to receive(:change_old_card_in_play_status).with(new_game.id, flipped_card).and_return(true)
-			# 	determine_next_card
-			# end
-
-			
 			context "the players guess_evaluation returned 'same'" do
 				let(:flipped_card) { "6"}
 				let(:guess_evaluation) { "sweep"}		
@@ -278,18 +304,6 @@ describe Card do
 				end
 			end	
 
-
-
-
-
-
-
-
-
-
-
-
-
 			context "the players guess_evaluation returned 'wrong'" do
 				let(:flipped_card) { "6"}
 				let(:guess_evaluation) { "wrong"}		
@@ -297,11 +311,6 @@ describe Card do
 				it "sets the 'card in play' equal to a newly flipped card" do
 					should == next_flipped_card
 				end
-			
-			# I need to figure out how to run a second "change old card in play" method w a second argument
-			# in order to re-assign the first flipped card a "played" status.... current, there is an issue w/
-			#two of them showing up.
-
 			end		
 		
 			context "the players guess_evaluation returned 'same'" do
@@ -309,21 +318,24 @@ describe Card do
 				let(:guess_evaluation) { "same"}		
 
 				it "sets the 'card in play' equal to a newly flipped card" do
-					should == next_flipped_card
+					should == flipped_card
 				end
 			end	
 
 			context "the players guess_evaluation returned 'action card'" do
-				let(:flipped_card) { "action card"}
-				let(:guess_evaluation) { "action card"}		
+				let(:flipped_card) { "action_card"}
+				let(:guess_evaluation) { "action_card"}		
 				
 				it "sets the 'card in play' equal to a newly flipped card" do
-					should == next_flipped_card
+					should == card_in_play
 				end
 			end	
 
 		end
 	end
+
+
+
 
 
 	# CHANGE THE OLD CARD_IN_PLAY STATUS - resets the original card_in_play's status

@@ -3,7 +3,7 @@ class Card < ActiveRecord::Base
  	
  	belongs_to :game
 
- 	@DECK_SIZE = 52
+ 	@DECK_SIZE = 54
 
  	def self.create_deck(game_id)
  		array = []
@@ -24,6 +24,18 @@ class Card < ActiveRecord::Base
  				card.save!
  			end
  		end
+
+ 		for i in 1..2
+			card = Card.new
+			card.name = "Reverse"
+			card.card_type = "action_card"
+			card.status = "not_in_play"
+			card.owner = "dealer"
+			card.card_order = array.shift
+			card.game_id = game_id
+			card.save!
+ 		end
+
  	end
 
  	def self.select_cards(game_id)
@@ -37,12 +49,18 @@ class Card < ActiveRecord::Base
 
 	def self.dealer_flips_card(game_id)
 		shuffled_deck = Card.select_cards(game_id)
-		Card.change_old_card_in_play_status(game_id)
+		
 		flipped_card = shuffled_deck.first
+		
+		# if it isn't an action card 
 		flipped_card.status = "card_in_play"
+		Card.change_old_card_in_play_status(game_id)
+		#otherwise leave thee old_card_in_play as the card in play.
+
 		flipped_card.owner = "pot"
 		flipped_card.save!
 		return flipped_card.name
+		
 	end
 
 	def self.change_old_card_in_play_status(game_id)
@@ -68,17 +86,32 @@ class Card < ActiveRecord::Base
 			"correct"
 		elsif flipped_card_evaluation == "same" 
 			"same"
-		elsif flipped_card_evaluation == "action card"
-			"action card"				
+		elsif flipped_card_evaluation == "action_card"
+			#take action on actioncard(flipped_card)
+			game = Game.find(game_id)
+			game.direction = if game.direction == "descending"
+				"ascending" 
+			else 
+				"descending"
+			end		
+			game.save!
+			return "action_card"				
 		else
 			"wrong"
 		end
 	end
 
+	# def self.take_action_on_action_card 
+		# if reverse 
+			#change game direction"
+
+	#end
+
+
 	def self.evaluate_flipped_card(card_in_play, flipped_card)
 		difference = flipped_card.to_i - card_in_play.to_i
 		if flipped_card.to_i == 0  # is an action_card
-			"action card"
+			"action_card"
 		elsif difference > 0
 			"higher"
 		elsif difference < 0
@@ -92,8 +125,10 @@ class Card < ActiveRecord::Base
 
 	def self.determine_the_card_in_play_for_next_hand(game_id,  guess_evaluation, card_in_play, flipped_card)
 		#Card.change_old_card_in_play_status(game_id, card_in_play)
-		if guess_evaluation == "correct"
+		if guess_evaluation == "correct" || guess_evaluation == "same"
 			flipped_card
+		elsif guess_evaluation == "action_card"
+			card_in_play
 		else
 			#Card.change_old_card_in_play_status(game_id, flipped_card)
 			Card.dealer_flips_card(game_id)

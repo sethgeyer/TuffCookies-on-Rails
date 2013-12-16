@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20131209170123) do
+ActiveRecord::Schema.define(:version => 20131216160637) do
 
   create_table "cards", :force => true do |t|
     t.string   "name"
@@ -29,6 +29,7 @@ ActiveRecord::Schema.define(:version => 20131209170123) do
     t.datetime "updated_at",                  :null => false
     t.integer  "consecutive_correct_guesses"
     t.string   "direction"
+    t.integer  "last_correct_guesser"
   end
 
   create_table "players", :force => true do |t|

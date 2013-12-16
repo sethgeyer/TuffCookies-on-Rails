@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe Game do
 
-	let(:new_game) { FactoryGirl.create(:game, consecutive_correct_guesses: 3)}
+	let(:new_game) { FactoryGirl.create(:game, consecutive_correct_guesses: 3, last_correct_guesser: 1)}
 
 	# Testing Associations
 	it { should have_many(:cards) }
@@ -13,12 +13,14 @@ describe Game do
   end
 
 
-	#TRACK CONSECUTIVE CORRECT GUESSES - keeps tabs on the number of consecutive correct guesses.
+	#TRACK CONSECUTIVE CORRECT GUESSES - keeps tabs on the number of consecutive correct guesses and who made the 
+	#last correct guess
+	
 	it { Game.should respond_to(:track_consecutive_correct_guesses) } 
 	
 	describe "#track_consecutive_correct_guesses" do
 		before(:each) do
-			Game.track_consecutive_correct_guesses(new_game.id, guess_evaluation)
+			Game.track_consecutive_correct_guesses(new_game.id, guess_evaluation, 2)
 			@calc_new_total = Game.find(new_game.id).consecutive_correct_guesses
 		end
 
@@ -26,6 +28,10 @@ describe Game do
 			let(:guess_evaluation) { "correct" } 
 			it "adds +1 to the consecutive_correct_guesses_total" do	
 				@calc_new_total.should == 4
+			end
+		
+			it "captures the number of the last player to guess correctly" do
+				Game.find(new_game.id).last_correct_guesser.should == 2
 			end
 		end
 
@@ -43,7 +49,7 @@ describe Game do
 			end
 		end
 
-		context "player guess_evaluation returns something OTHER THAN 'correct or wrong or sweep'" do
+		context "player guess_evaluation returns something OTHER THAN 'correct, wrong or sweep'" do
 			let(:updated_total) { 3 }
 			context "player guess_evaluation returns 'same'" do
 				let(:guess_evaluation) { "same" }
@@ -61,10 +67,4 @@ describe Game do
 		end
 
 	end
-
-
-
-
-
-
 end

@@ -67,8 +67,6 @@ describe Player do
           Player.determine_the_next_player(@player1.game_id, 1, "sweep").should == "Bill"
         end
       end
-
-
     end
 
     context "the game's order of play is 'descending'" do
@@ -84,11 +82,9 @@ describe Player do
         end
       end
 
-
       context "the guess evaluation returned 'wrong'" do
         context "the current player is the first player" do
           it "assigns the 'current_player' status to the second player" do
-      
             Player.determine_the_next_player(@player1.game_id, 1, "wrong").should == "Dennis"
           end
         end
@@ -152,15 +148,5 @@ describe Player do
         end
       end
     end    
-
-
-
-
-
-
-
-
-
-
   end
 end

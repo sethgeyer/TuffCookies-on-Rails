@@ -12,7 +12,7 @@
 
 <%= button_tag "Higher", name: "higher", value: "higher" %>
 <%= button_tag "Lower", name: "lower", value: "lower" %>
-<%if @consecutive_correct_guesses >= 3 %>
+<%if @consecutive_correct_guesses >= 3 && Game.find(@player.game_id).last_correct_guesser == @player.number%>
 	<%= button_tag "Sweep", name: "sweep", value: "sweep" %>
 <%end%>
 <%= button_tag "End Game", name: "end_game", value: "end_game"%>
@@ -23,6 +23,7 @@ Cheat for End User Testing  <br>
 Cards in Deck: <%=@deck_array%><br>
 Player Order: <%=hidden_field_tag "number", @player.number %><br> 
 Game ID: <%= @player.game_id%><br>
+Game Direction: <%=Game.find(@player.game_id).direction%><br>
 ######
 <%end%> 
 
