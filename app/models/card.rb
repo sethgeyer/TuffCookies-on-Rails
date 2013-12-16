@@ -3,7 +3,7 @@ class Card < ActiveRecord::Base
  	
  	belongs_to :game
 
- 	@DECK_SIZE = 54
+ 	@DECK_SIZE = 72
 
  	def self.create_deck(game_id)
  		array = []
@@ -25,7 +25,7 @@ class Card < ActiveRecord::Base
  			end
  		end
 
- 		for i in 1..2
+ 		for i in 1..20
 			card = Card.new
 			card.name = "Reverse"
 			card.card_type = "action_card"
@@ -48,19 +48,24 @@ class Card < ActiveRecord::Base
  	end
 
 	def self.dealer_flips_card(game_id)
-		shuffled_deck = Card.select_cards(game_id)
 		
-		flipped_card = shuffled_deck.first
+		shuffled_deck = Card.select_cards(game_id)	
+		@flipped_card = shuffled_deck.first
 		
-		# if it isn't an action card 
-		flipped_card.status = "card_in_play"
-		Card.change_old_card_in_play_status(game_id)
-		#otherwise leave thee old_card_in_play as the card in play.
+		if @flipped_card.card_type != "action_card"
+			@flipped_card.status = "card_in_play"
+			Card.change_old_card_in_play_status(game_id)
+		else
+			@flipped_card.status = "played"
+		end
 
-		flipped_card.owner = "pot"
-		flipped_card.save!
-		return flipped_card.name
-		
+		@flipped_card.owner = "pot"
+		@flipped_card.save!
+		# if flipped_card.card_type == "action_card"
+		# 	Card.dealer_flips_card(game_id) 
+		# end
+			return @flipped_card.name
+
 	end
 
 	def self.change_old_card_in_play_status(game_id)
@@ -124,14 +129,15 @@ class Card < ActiveRecord::Base
 	end
 
 	def self.determine_the_card_in_play_for_next_hand(game_id,  guess_evaluation, card_in_play, flipped_card)
-		#Card.change_old_card_in_play_status(game_id, card_in_play)
 		if guess_evaluation == "correct" || guess_evaluation == "same"
 			flipped_card
 		elsif guess_evaluation == "action_card"
 			card_in_play
 		else
-			#Card.change_old_card_in_play_status(game_id, flipped_card)
 			Card.dealer_flips_card(game_id)
+			while @flipped_card.card_type == "action_card" do
+				Card.dealer_flips_card(game_id)
+			end
 		end
 
 	end
@@ -145,7 +151,7 @@ class Card < ActiveRecord::Base
 	 		card.owner = awardee
 	 		card.save!
 	 	end
-	 	end
+	 end
 	end
 
 

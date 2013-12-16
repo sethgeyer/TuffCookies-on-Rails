@@ -72,23 +72,37 @@ describe Card do
 			Card.dealer_flips_card(new_game.id)
 		end
 		
-		it "calls the 'change_old_card_in_play_status' method" do
-			expect(Card).to receive(:change_old_card_in_play_status).with(new_game.id).and_return(true)
-			Card.dealer_flips_card(new_game.id)
-		end
-
 		it "returns the name of the flipped card" do
 			Card.dealer_flips_card(new_game.id).should == @cards.first.name
-		end
-
-		it "assigns a status of 'card_in_play' to the flipped card" do
-			Card.dealer_flips_card(new_game.id)
-			Card.find(@cards.first.id).status.should == "card_in_play"
-		end
+		end		
 
 		it "assigns an 'owner' of 'pot' to the flipped_card" do
 			Card.dealer_flips_card(new_game.id)
 			Card.find(@cards.first.id).owner.should == "pot"
+		end
+		
+		context "flipped card is not an action card" do
+			it "calls the 'change_old_card_in_play_status' method" do
+				expect(Card).to receive(:change_old_card_in_play_status).with(new_game.id).and_return(true)
+				Card.dealer_flips_card(new_game.id)
+			end
+
+			it "assigns a status of 'card_in_play' to the flipped card" do
+				Card.dealer_flips_card(new_game.id)
+				Card.find(@cards.first.id).status.should == "card_in_play"
+			end
+		end
+
+		context "flipped card is an action card" do
+			before(:each) do
+				@action_cards = Card.where(game_id: new_game.id).where(status: "not_in_play").where(card_type: "action_card").order(:card_order)
+				allow(Card).to receive(:select_cards).with(new_game.id).and_return(@action_cards)
+			end
+
+			it "assigns a status of 'card_in_play' to the card in play in pot before action card flipped" do
+				Card.dealer_flips_card(new_game.id)
+				Card.find(@action_cards.first.id).status.should == "played"
+			end
 		end
 	end
 
@@ -279,13 +293,6 @@ describe Card do
 			end
 		end
 		
-		
-
-
-
-
-
-
 		context "the players guess_evaluation did NOT return 'correct'" do
 			let(:flipped_card) { "7"}
 			let(:guess_evaluation) { "same"}

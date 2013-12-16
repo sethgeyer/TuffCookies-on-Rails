@@ -27,7 +27,7 @@ class GamesController < ApplicationController
 		@consecutive_correct_guesses = Game.find(game_id).consecutive_correct_guesses
 		#####showing cards in deck for feature testing purposes only
 		deck_array = []
-		game_cards.where(status: "not_in_play").order(:card_order).limit(10).each { |card| deck_array << card.name } 
+		game_cards.where(status: "not_in_play").order(:card_order).limit(30).each { |card| deck_array << card.name } 
 		@deck_array = deck_array
 		#####
 
