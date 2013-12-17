@@ -3,7 +3,7 @@ class Card < ActiveRecord::Base
  	
  	belongs_to :game
 
- 	@DECK_SIZE = 72
+ 	@DECK_SIZE = 54
 
  	def self.create_deck(game_id)
  		array = []
@@ -25,7 +25,7 @@ class Card < ActiveRecord::Base
  			end
  		end
 
- 		for i in 1..20
+ 		for i in 1..2
 			card = Card.new
 			card.name = "Reverse"
 			card.card_type = "action_card"
@@ -64,8 +64,12 @@ class Card < ActiveRecord::Base
 		# if flipped_card.card_type == "action_card"
 		# 	Card.dealer_flips_card(game_id) 
 		# end
-			return @flipped_card.name
 
+		while @flipped_card.card_type == "action_card" do
+			Card.dealer_flips_card(game_id)
+		end
+			
+		return @flipped_card.name
 	end
 
 	def self.change_old_card_in_play_status(game_id)
@@ -133,11 +137,8 @@ class Card < ActiveRecord::Base
 			flipped_card
 		elsif guess_evaluation == "action_card"
 			card_in_play
-		else
+		else #your guess is "wrong"
 			Card.dealer_flips_card(game_id)
-			while @flipped_card.card_type == "action_card" do
-				Card.dealer_flips_card(game_id)
-			end
 		end
 
 	end

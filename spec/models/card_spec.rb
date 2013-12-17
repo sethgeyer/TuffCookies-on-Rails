@@ -302,16 +302,21 @@ describe Card do
 				allow(Card).to receive(:dealer_flips_card).with(new_game.id).and_return(next_flipped_card)
 			end
 
-			context "the players guess_evaluation returned 'same'" do
+			context "Line 305 - the players guess_evaluation returned 'same'" do
 				let(:flipped_card) { "6"}
-				let(:guess_evaluation) { "sweep"}		
+				let(:guess_evaluation) { "sweep"}
+				before(:each) do
+					@flipped_card = Card.new
+					@flipped_card.card_type = "numeric"
+					@flipped_card.save!
+				end
 				
 				it "sets the 'card in play' equal to a newly flipped card" do
 					should == next_flipped_card
 				end
 			end	
 
-			context "the players guess_evaluation returned 'wrong'" do
+			context "Hang Up - the players guess_evaluation returned 'wrong'" do
 				let(:flipped_card) { "6"}
 				let(:guess_evaluation) { "wrong"}		
 				
@@ -320,7 +325,7 @@ describe Card do
 				end
 			end		
 		
-			context "the players guess_evaluation returned 'same'" do
+			context "Line 323 - the players guess_evaluation returned 'same'" do
 				let(:flipped_card) { "7"}
 				let(:guess_evaluation) { "same"}		
 
