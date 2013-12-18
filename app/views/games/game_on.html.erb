@@ -10,10 +10,14 @@
 <p>Consecutive Correct Guesses: <%=@consecutive_correct_guesses%></p>
 <p><b>Last Guess Was: <%=@evaluation%></b></p>
 
-<%= button_tag "Higher", name: "higher", value: "higher" %>
-<%= button_tag "Lower", name: "lower", value: "lower" %>
-<%if @consecutive_correct_guesses >= 3 && Game.find(@player.game_id).last_correct_guesser == @player.number%>
-	<%= button_tag "Sweep", name: "sweep", value: "sweep" %>
+<% if @card_in_play.to_i != 0 %>
+	<%= button_tag "Higher", name: "higher", value: "higher" %>
+	<%= button_tag "Lower", name: "lower", value: "lower" %>
+	<%if @consecutive_correct_guesses >= 3 && Game.find(@player.game_id).last_correct_guesser == @player.number%>
+		<%= button_tag "Sweep", name: "sweep", value: "sweep" %>
+	<%end%>
+<%else%>
+<%= button_tag "Next Card", name: "next_card", value: "next_card"%>
 <%end%>
 <%= button_tag "End Game", name: "end_game", value: "end_game"%>
 

@@ -52,23 +52,15 @@ class Card < ActiveRecord::Base
 		shuffled_deck = Card.select_cards(game_id)	
 		@flipped_card = shuffled_deck.first
 		
-		if @flipped_card.card_type != "action_card"
+		#if @flipped_card.card_type != "action_card"
 			@flipped_card.status = "card_in_play"
 			Card.change_old_card_in_play_status(game_id)
-		else
-			@flipped_card.status = "played"
-		end
+		#else
+		#	@flipped_card.status = "played"
+		#end
 
 		@flipped_card.owner = "pot"
 		@flipped_card.save!
-		# if flipped_card.card_type == "action_card"
-		# 	Card.dealer_flips_card(game_id) 
-		# end
-
-		while @flipped_card.card_type == "action_card" do
-			Card.dealer_flips_card(game_id)
-		end
-			
 		return @flipped_card.name
 	end
 
@@ -90,31 +82,30 @@ class Card < ActiveRecord::Base
 	end
 
 	def self.evaluate_guess(game_id, guess, card_in_play, flipped_card)
+		
 		flipped_card_evaluation = Card.evaluate_flipped_card(card_in_play, flipped_card)
 		if flipped_card_evaluation == guess 
 			"correct"
 		elsif flipped_card_evaluation == "same" 
 			"same"
 		elsif flipped_card_evaluation == "action_card"
-			#take action on actioncard(flipped_card)
-			game = Game.find(game_id)
+			Card.take_action_on_action_card(game_id, flipped_card)
+							
+		else
+			"wrong"
+		end
+	end
+
+	def self.take_action_on_action_card(game_id, flipped_card)
+		game = Game.find(game_id)
 			game.direction = if game.direction == "descending"
 				"ascending" 
 			else 
 				"descending"
 			end		
 			game.save!
-			return "action_card"				
-		else
-			"wrong"
-		end
+			return "action_card"
 	end
-
-	# def self.take_action_on_action_card 
-		# if reverse 
-			#change game direction"
-
-	#end
 
 
 	def self.evaluate_flipped_card(card_in_play, flipped_card)
@@ -137,9 +128,15 @@ class Card < ActiveRecord::Base
 			flipped_card
 		elsif guess_evaluation == "action_card"
 			card_in_play
-		else #your guess is "wrong"
+		else #your guess is "wrong" or "sweep"
 			Card.dealer_flips_card(game_id)
+			
+			# while @flipped_card.name == "Reverse" do
+			# 	the_card = Card.dealer_flips_card(game_id)
+			# end
+
 		end
+
 
 	end
 

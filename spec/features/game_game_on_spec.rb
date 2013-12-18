@@ -47,6 +47,21 @@ describe "Game_On Page" do
 			end
 		end
 		
+		context "the card in play is an action card" do
+			before(:each) do
+				card = Card.where(game_id: @player1.game_id).where(status: "card_in_play").first
+				card.name = "Reverse"
+				card.card_type = "action_card"
+				card.save!
+				visit "/game_on/#{@player1.game_id}/none/#{@player1.name}"
+			end
+			it { should have_button("Next Card") }
+			it { should_not have_button("Sweep") }
+			it { should_not have_button("Higher") }
+			it { should_not have_button("Lower") } 
+		end
+
+
 		context "the player wants to 'sweep' the cards from the pot" do
 			
 			context "there have been less than 3 consecutive correct guesses" do

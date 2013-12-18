@@ -27,7 +27,7 @@ class GamesController < ApplicationController
 		@consecutive_correct_guesses = Game.find(game_id).consecutive_correct_guesses
 		#####showing cards in deck for feature testing purposes only
 		deck_array = []
-		game_cards.where(status: "not_in_play").order(:card_order).limit(30).each { |card| deck_array << card.name } 
+		game_cards.where(status: "not_in_play").order(:card_order).limit(10).each { |card| deck_array << card.name } 
 		@deck_array = deck_array
 		#####
 
@@ -46,17 +46,17 @@ class GamesController < ApplicationController
 				card_in_play = 'n/a'
 				flipped_card = 'n/a'
 			else
-				guess = params[:higher] || params[:lower]
+				guess = params[:higher] || params[:lower] 
 				card_in_play = Card.where(game_id: game_id).where(status: "card_in_play").first.name
 				flipped_card = Card.dealer_flips_card(game_id)
 
 				guess_evaluation = Card.evaluate_guess(game_id, guess, card_in_play, flipped_card)
-				#binding.pry
+				
 			end
 			Game.track_consecutive_correct_guesses(game_id, guess_evaluation, current_player_number)
 			Card.award_cards_in_the_pot(game_id, current_player_number, guess_evaluation)
 			next_current_player = Player.determine_the_next_player(game_id, current_player_number, guess_evaluation)
-			#binding.pry
+			
 			Card.determine_the_card_in_play_for_next_hand(game_id, guess_evaluation, card_in_play, flipped_card)
 			redirect_to "/game_on/#{game_id}/#{guess_evaluation}/#{next_current_player}"
 		end

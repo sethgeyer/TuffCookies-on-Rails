@@ -61,27 +61,29 @@ describe Card do
 
 	describe "#dealer_flips_card" do
 		
-		before(:each) do
-			@cards = Card.where(game_id: new_game.id).where(status: "not_in_play").order(:card_order)
-			allow(Card).to receive(:select_cards).with(new_game.id).and_return(@cards)
+		let(:cards) { Card.where(game_id: new_game.id).where(status: "not_in_play").order(:card_order) }
+		
+		before(:each) do			
+			allow(Card).to receive(:select_cards).with(new_game.id).and_return(cards)
 			allow(Card).to receive(:change_old_card_in_play_status).with(new_game.id).and_return(true)
 		end
 
 		it "calls 'select_cards' method " do
-			expect(Card).to receive(:select_cards).with(new_game.id).and_return(@cards)
+			expect(Card).to receive(:select_cards).with(new_game.id).and_return(cards)
 			Card.dealer_flips_card(new_game.id)
 		end
 		
 		it "returns the name of the flipped card" do
-			Card.dealer_flips_card(new_game.id).should == @cards.first.name
+			Card.dealer_flips_card(new_game.id).should == cards.first.name
 		end		
 
 		it "assigns an 'owner' of 'pot' to the flipped_card" do
 			Card.dealer_flips_card(new_game.id)
-			Card.find(@cards.first.id).owner.should == "pot"
+			Card.find(cards.first.id).owner.should == "pot"
 		end
 		
 		context "flipped card is not an action card" do
+			let(:cards) { Card.where(game_id: new_game.id).where(status: "not_in_play").where(card_type: "numbered").order(:card_order) }
 			it "calls the 'change_old_card_in_play_status' method" do
 				expect(Card).to receive(:change_old_card_in_play_status).with(new_game.id).and_return(true)
 				Card.dealer_flips_card(new_game.id)
@@ -89,21 +91,19 @@ describe Card do
 
 			it "assigns a status of 'card_in_play' to the flipped card" do
 				Card.dealer_flips_card(new_game.id)
-				Card.find(@cards.first.id).status.should == "card_in_play"
+				Card.find(cards.first.id).status.should == "card_in_play"
 			end
 		end
 
-		context "flipped card is an action card" do
-			before(:each) do
-				@action_cards = Card.where(game_id: new_game.id).where(status: "not_in_play").where(card_type: "action_card").order(:card_order)
-				allow(Card).to receive(:select_cards).with(new_game.id).and_return(@action_cards)
-			end
+		# context "flipped card is an action card" do
+		# 	let(:cards) { Card.where(game_id: new_game.id).where(status: "not_in_play").where(card_type: "action_card").order(:card_order) }
+		# 	before(:each) { allow(Card).to receive(:select_cards).with(new_game.id).and_return(cards) }
 
-			it "assigns a status of 'card_in_play' to the card in play in pot before action card flipped" do
-				Card.dealer_flips_card(new_game.id)
-				Card.find(@action_cards.first.id).status.should == "played"
-			end
-		end
+		# 	it "assigns a status of 'card_in_play' to the card in play in pot before action card flipped" do
+		# 		Card.dealer_flips_card(new_game.id)
+		# 		Card.find(cards.first.id).status.should == "played"
+		# 	end
+		# end
 	end
 
 
@@ -137,98 +137,88 @@ describe Card do
 				guess_evaluation			
 			end
 
-			context "the flipped card is higher" do							
-				before(:each) do
-				 allow(Card).to receive(:evaluate_flipped_card).with(card_in_play, flipped_card).and_return("higher")			
-				end
-				context "the guess is 'higher'" do
-					let(:guess) { "higher"}					
-					it { should == "correct" }
-				end
-				
-				context "the guess is 'lower'" do
-					let(:guess) { "lower" }
-					it { should == "wrong" }
-				end		
-			end
+			# context "the card_in_play is an action_card" do
+			# 	let(:card_in_play) { "Reverse" }
+			# 	let(:guess) { "next_card"}
+			# 	it { should == "action_card" }
+			# end
 
-			context "the flipped card is lower" do			
-				before(:each) do
-				 allow(Card).to receive(:evaluate_flipped_card).with(card_in_play, flipped_card).and_return("lower")			
-				end
-				
-				context "the guess is 'lower'" do
-					let(:guess) { "lower" }
-					it { should == "correct" }
-				end
-				
-				context "the guess is 'higher'" do
-					let(:guess) { "higher"}
-					it { should == "wrong" }
-				end		
-			end
 
-			context "the flipped card is the same" do			
-				before(:each) do
-				 allow(Card).to receive(:evaluate_flipped_card).with(card_in_play, flipped_card).and_return("same")			
+			context "the card_in_play is not an action_card"
+				context "the flipped card is higher" do							
+					before(:each) do
+					 allow(Card).to receive(:evaluate_flipped_card).with(card_in_play, flipped_card).and_return("higher")			
+					end
+					context "the guess is 'higher'" do
+						let(:guess) { "higher"}					
+						it { should == "correct" }
+					end
+					
+					context "the guess is 'lower'" do
+						let(:guess) { "lower" }
+						it { should == "wrong" }
+					end		
 				end
-				
-				context "the guess is 'lower'" do
-					let(:guess) { "lower" }
-					it { should == "same" }
+
+				context "the flipped card is lower" do			
+					before(:each) do
+					 allow(Card).to receive(:evaluate_flipped_card).with(card_in_play, flipped_card).and_return("lower")			
+					end
+					
+					context "the guess is 'lower'" do
+						let(:guess) { "lower" }
+						it { should == "correct" }
+					end
+					
+					context "the guess is 'higher'" do
+						let(:guess) { "higher"}
+						it { should == "wrong" }
+					end		
 				end
-				
-				context "the guess is 'higher'" do
-					let(:guess) { "higher"}
-					it { should == "same" }
-				end		
-			end
+
+				context "the flipped card is the same" do			
+					before(:each) do
+					 allow(Card).to receive(:evaluate_flipped_card).with(card_in_play, flipped_card).and_return("same")			
+					end
+					
+					context "the guess is 'lower'" do
+						let(:guess) { "lower" }
+						it { should == "same" }
+					end
+					
+					context "the guess is 'higher'" do
+						let(:guess) { "higher"}
+						it { should == "same" }
+					end		
+				end
 
 			context "the flipped card is an action card" do			
 				before(:each) do
-				 allow(Card).to receive(:evaluate_flipped_card).with(card_in_play, flipped_card).and_return("action_card")			
-				end
+					allow(Card).to receive(:evaluate_flipped_card).with(card_in_play, flipped_card).and_return("action_card")			
+					allow(Card).to receive(:take_action_on_action).with(new_game.id, flipped_card).and_return("action_card")	
+				end					
 				
-				context "the guess is 'lower'" do
-					let(:guess) { "lower" }
-					it { should == "action_card" }
-				end
-				
-				context "the guess is 'higher'" do
-					let(:guess) { "higher"}
-					it { should == "action_card" }
-				end
-
-				context "the action card ia a 'Reverse' card" do
-					let(:guess) { "lower" }
-					let(:flipped_card) { "Reverse" }
-					it "should reverse the order of play" do
-						guess_evaluation
-						Game.find(new_game.id).direction.should == "descending"
-					end
-				end
-
-				context "the action card ia a 'Reverse' card" do
-					let(:guess) { "lower" }
-					let(:flipped_card) { "Reverse" }
-					before(:each) do
-						game = Game.find(new_game.id)
-						game.direction = "descending"
-						game.save!
-					end
-
-					it "should reverse the order of play" do
-						guess_evaluation
-						Game.find(new_game.id).direction.should == "ascending"
-					end
-				end
-
-
-			end
-		end	
-
+				it { should == "action_card" }
+			end			
+		end
 	#### > end of EVALUATE GUESS
 
+
+	# TAKE_ACTION_ON_ACTION_CARD - determines the appropriate action to take based on the action card drawn.
+		describe "#take_action_on_action_card" do
+			context "action card is a 'Reverse'" do
+				let(:flipped_card) { "Reverse" }
+				before(:each) do
+					game = Game.find(new_game.id)
+					game.direction = "descending"
+					game.save!
+				end
+				it "should reverse the order of play" do
+					Card.take_action_on_action_card(new_game.id, flipped_card)
+					Game.find(new_game.id).direction.should == "ascending"
+				end
+			end
+		end
 
 	# EVALUATE FLIPPED_CARD - determines whether the next card is higher or lower
 	# than the card_in_play
@@ -302,30 +292,30 @@ describe Card do
 				allow(Card).to receive(:dealer_flips_card).with(new_game.id).and_return(next_flipped_card)
 			end
 
-			context "Line 305 - the players guess_evaluation returned 'same'" do
-				let(:flipped_card) { "6"}
-				let(:guess_evaluation) { "sweep"}
-				before(:each) do
-					@flipped_card = Card.new
-					@flipped_card.card_type = "numeric"
-					@flipped_card.save!
-				end
+			# context "the players guess_evaluation returned 'sweep'" do
+			# 	let(:flipped_card) { "6"}
+			# 	let(:guess_evaluation) { "sweep"}
+			# 	before(:each) do
+			# 		@flipped_card = Card.new
+			# 		@flipped_card.card_type = "numeric"
+			# 		@flipped_card.save!
+			# 	end
 				
-				it "sets the 'card in play' equal to a newly flipped card" do
-					should == next_flipped_card
-				end
-			end	
+			# 	it "sets the 'card in play' equal to a newly flipped card" do
+			# 		should == next_flipped_card
+			# 	end
+			# end	
 
-			context "Hang Up - the players guess_evaluation returned 'wrong'" do
-				let(:flipped_card) { "6"}
-				let(:guess_evaluation) { "wrong"}		
+			# context "the players guess_evaluation returned 'wrong'" do
+			# 	let(:flipped_card) { "6"}
+			# 	let(:guess_evaluation) { "wrong"}		
 				
-				it "sets the 'card in play' equal to a newly flipped card" do
-					should == next_flipped_card
-				end
-			end		
+			# 	it "sets the 'card in play' equal to a newly flipped card" do
+			# 		should == next_flipped_card
+			# 	end
+			# end		
 		
-			context "Line 323 - the players guess_evaluation returned 'same'" do
+			context "the players guess_evaluation returned 'same'" do
 				let(:flipped_card) { "7"}
 				let(:guess_evaluation) { "same"}		
 
